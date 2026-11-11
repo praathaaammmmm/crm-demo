@@ -1,0 +1,174 @@
+/*
+ * Design tokens. Every colour, size, radius, shadow and timing used by the UI is defined here,
+ * so the whole look can be restyled in this one file.
+ * Breakpoints (media queries cannot use variables): desktop >= 1024px, tablet 768-1023px, mobile < 768px.
+ */
+:root {
+  /* Layout */
+  --sidebar-width: 236px;
+  --topbar-height: 52px;
+  --toolbar-height: 48px;
+  --rail-width: 320px;
+  --kanban-column-width: 288px;
+  --content-max: 1280px;
+  --dialog-width: 480px;
+  --drawer-width: 440px;
+
+  /* Spacing (4px steps) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+
+  /* Type */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-title: 16px;
+  --text-metric: 22px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --leading: 1.45;
+
+  /* Control sizes */
+  --control-sm: 28px;
+  --control-md: 32px;
+  --icon-size: 16px;
+  --avatar-xs: 20px;
+  --avatar-sm: 24px;
+  --focus-width: 2px;
+
+  /* Neutrals */
+  --color-canvas: #faf9f7;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f4f4f2;
+  --color-selected: #efefec;
+  --color-border: #e3e5e8;
+  --color-border-strong: #cdd1d6;
+  --color-text: #1c1d21;
+  --color-text-muted: #5e6370;
+  --color-text-subtle: #8a8f99;
+  --color-backdrop: rgb(20 22 28 / 0.32);
+
+  /* Accent (one restrained indigo-blue) */
+  --color-accent: #4a5bd4;
+  --color-accent-hover: #3d4ec2;
+  --color-accent-soft: #eef0fc;
+  --color-accent-text: #ffffff;
+  --color-focus-ring: #6b7bea;
+
+  /* Semantic (muted) */
+  --color-danger: #b4322b;
+  --color-danger-soft: #fbeceb;
+  --color-warning: #9a6512;
+  --color-warning-soft: #fbf3e4;
+  --color-success: #2f7a4f;
+  --color-success-soft: #e9f5ee;
+  --color-info-soft: #eef3fa;
+
+  /* Task statuses: fg (text), bg (pill), dot */
+  --status-todo-fg: #4c5361;
+  --status-todo-bg: #f0f1f3;
+  --status-todo-dot: #9aa0aa;
+  --status-in-progress-fg: #2f4fa8;
+  --status-in-progress-bg: #edf1fb;
+  --status-in-progress-dot: #5b7bd6;
+  --status-blocked-fg: #a33a2f;
+  --status-blocked-bg: #fbeeec;
+  --status-blocked-dot: #d26a5e;
+  --status-in-review-fg: #6a4aa8;
+  --status-in-review-bg: #f3effa;
+  --status-in-review-dot: #9a7fd0;
+  --status-changes-requested-fg: #8e5a14;
+  --status-changes-requested-bg: #fbf3e5;
+  --status-changes-requested-dot: #d1a04e;
+  --status-completed-fg: #2f7a4f;
+  --status-completed-bg: #eaf5ee;
+  --status-completed-dot: #5fae80;
+
+  /* Priorities (marker colour) */
+  --priority-low: #a7adb7;
+  --priority-medium: #6f86c9;
+  --priority-high: #c9893a;
+  --priority-urgent: #c25b52;
+
+  /* Depth: almost flat */
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px rgb(20 22 28 / 0.06);
+  --shadow-popover: 0 4px 16px rgb(20 22 28 / 0.1);
+  --shadow-dialog: 0 12px 40px rgb(20 22 28 / 0.18);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Layers */
+  --z-sidebar: 20;
+  --z-topbar: 30;
+  --z-overlay: 40;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: #141518;
+    --color-surface: #1b1c20;
+    --color-surface-hover: #23252a;
+    --color-selected: #2a2c32;
+    --color-border: #2e3036;
+    --color-border-strong: #3d4048;
+    --color-text: #ececef;
+    --color-text-muted: #a5a9b3;
+    --color-text-subtle: #7d828c;
+    --color-backdrop: rgb(0 0 0 / 0.5);
+
+    --color-accent: #8495f0;
+    --color-accent-hover: #97a6f4;
+    --color-accent-soft: #252a45;
+    --color-accent-text: #101225;
+    --color-focus-ring: #9aa8f5;
+
+    --color-danger: #ee8a80;
+    --color-danger-soft: #3a2220;
+    --color-warning: #e2b46a;
+    --color-warning-soft: #352a19;
+    --color-success: #7fcf9d;
+    --color-success-soft: #1d3326;
+    --color-info-soft: #1f2836;
+
+    --status-todo-fg: #c2c6ce;
+    --status-todo-bg: #2a2c31;
+    --status-in-progress-fg: #a9bcf3;
+    --status-in-progress-bg: #232b40;
+    --status-blocked-fg: #f0a199;
+    --status-blocked-bg: #3a2422;
+    --status-in-review-fg: #c7b4ef;
+    --status-in-review-bg: #2d2640;
+    --status-changes-requested-fg: #e9c486;
+    --status-changes-requested-bg: #362c1b;
+    --status-completed-fg: #93d8ad;
+    --status-completed-bg: #1f3328;
+
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-popover: 0 4px 16px rgb(0 0 0 / 0.4);
+    --shadow-dialog: 0 12px 40px rgb(0 0 0 / 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}

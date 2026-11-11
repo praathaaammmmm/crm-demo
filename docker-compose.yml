@@ -1,0 +1,23 @@
+# Local development database only. Not for production.
+# Values come from the root .env (copy .env.example and replace every placeholder).
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      CRM_MIGRATOR_PASSWORD: ${CRM_MIGRATOR_PASSWORD:?set CRM_MIGRATOR_PASSWORD in .env}
+      CRM_APP_PASSWORD: ${CRM_APP_PASSWORD:?set CRM_APP_PASSWORD in .env}
+      CRM_WORKER_PASSWORD: ${CRM_WORKER_PASSWORD:?set CRM_WORKER_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - crm-postgres-data:/var/lib/postgresql
+      - ./infra/docker/postgres/init-roles.sh:/docker-entrypoint-initdb.d/10-init-roles.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  crm-postgres-data:

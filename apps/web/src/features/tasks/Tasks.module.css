@@ -1,0 +1,185 @@
+/* Status pill: colours come from per-status tokens. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--pill-bg);
+  color: var(--pill-fg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--pill-dot);
+}
+
+.todo {
+  --pill-fg: var(--status-todo-fg);
+  --pill-bg: var(--status-todo-bg);
+  --pill-dot: var(--status-todo-dot);
+}
+
+.inProgress {
+  --pill-fg: var(--status-in-progress-fg);
+  --pill-bg: var(--status-in-progress-bg);
+  --pill-dot: var(--status-in-progress-dot);
+}
+
+.blocked {
+  --pill-fg: var(--status-blocked-fg);
+  --pill-bg: var(--status-blocked-bg);
+  --pill-dot: var(--status-blocked-dot);
+}
+
+.inReview {
+  --pill-fg: var(--status-in-review-fg);
+  --pill-bg: var(--status-in-review-bg);
+  --pill-dot: var(--status-in-review-dot);
+}
+
+.changesRequested {
+  --pill-fg: var(--status-changes-requested-fg);
+  --pill-bg: var(--status-changes-requested-bg);
+  --pill-dot: var(--status-changes-requested-dot);
+}
+
+.completed {
+  --pill-fg: var(--status-completed-fg);
+  --pill-bg: var(--status-completed-bg);
+  --pill-dot: var(--status-completed-dot);
+}
+
+/* Priority: 1-4 small bars. */
+.priority {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 10px;
+}
+
+.bar {
+  width: 3px;
+  border-radius: 1px;
+  background: var(--color-border-strong);
+}
+
+.bar:nth-child(1) {
+  height: 4px;
+}
+
+.bar:nth-child(2) {
+  height: 6px;
+}
+
+.bar:nth-child(3) {
+  height: 8px;
+}
+
+.bar:nth-child(4) {
+  height: 10px;
+}
+
+.barOn {
+  background: var(--priority-color);
+}
+
+.low {
+  --priority-color: var(--priority-low);
+}
+
+.medium {
+  --priority-color: var(--priority-medium);
+}
+
+.high {
+  --priority-color: var(--priority-high);
+}
+
+.urgent {
+  --priority-color: var(--priority-urgent);
+}
+
+/* Due date */
+.due {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.overdue {
+  color: var(--color-danger);
+  font-weight: var(--weight-medium);
+}
+
+/* Lists */
+.titleLink {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}
+
+.cellMuted {
+  color: var(--color-text-muted);
+}
+
+.person {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.group {
+  margin-bottom: var(--space-6);
+}
+
+.groupTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.count {
+  color: var(--color-text-subtle);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 var(--space-3);
+}
+
+.formError {
+  margin-bottom: var(--space-3);
+}
+
+.hint {
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+}
+
+@media (max-width: 767px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}

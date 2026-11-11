@@ -1,0 +1,38 @@
+.status {
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+}
+
+.muted {
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 220px;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.note {
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+}

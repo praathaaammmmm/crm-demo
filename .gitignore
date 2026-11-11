@@ -1,0 +1,18 @@
+# Secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+apps/web/.env.local
+
+# Dependencies and generated output
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Local tooling caches
+.npm-cache/
+.playwright-browsers/
