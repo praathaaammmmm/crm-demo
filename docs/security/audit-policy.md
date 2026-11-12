@@ -87,6 +87,46 @@ Logins and logouts are recorded in `attendance_events` (append-only for applicat
 | `defect.responded` | `user` (assignee, VP or CEO) | A note and/or evidence link | `after { taskId, projectId, updateId, hasNote, hasEvidence }` |
 | `release.readiness_set` | `user` (VP or CEO) | A readiness decision is appended (entity `project`) | `after { projectId, decisionId, readiness, openBlockingDefects, failedOrBlockedQaChecks }` |
 
+## Meeting audit actions
+
+| Action | Actor | When | Recorded |
+|---|---|---|---|
+| `meeting.created` | `user` (CEO) | A meeting is scheduled | `after { startsAt, endsAt, version, attendeeCount, projectId, taskId }` |
+| `meeting.updated` | `user` (CEO) | A meeting is edited | `before { startsAt, endsAt, version }`, `after { startsAt, endsAt, version, timeChanged, responsesReset, responsesResetAt, attendeesAdded, attendeesRemoved, attendeesRetained, titleChanged, descriptionChanged, locationChanged, meetingUrlChanged }` |
+| `meeting.cancelled` | `user` (CEO) | A meeting is cancelled | `before { status, version }`, `after { status, version }` |
+| `meeting.responded` | `user` (attendee) | Accept or decline | `before { response }`, `after { response, version }` |
+
+Meeting titles, descriptions, locations and links are never recorded. Reading notifications is not audited.
+
+## Growth audit actions (Phase 4A.1–4A.3)
+
+| Action | Actor | Recorded |
+|---|---|---|
+| `growth.company_created` | `user` (CGO) | `after { archived: false }` |
+| `growth.company_updated` | `user` (CGO) | `after { nameChanged, websiteUrlChanged, industryChanged, notesChanged }` |
+| `growth.company_archived` | `user` (CGO) | `before { archived: false }`, `after { archived: true }` |
+| `growth.contact_created` | `user` (CGO) | `after { companyId, doNotContact, archived: false }` |
+| `growth.contact_updated` | `user` (CGO) | `before { doNotContact }`, `after { companyId, doNotContact, fullNameChanged, roleTitleChanged, emailChanged, phoneChanged, linkedinUrlChanged, websiteUrlChanged }` |
+| `growth.contact_archived` | `user` (CGO) | `before { archived: false }`, `after { companyId, archived: true }` |
+
+| `growth.lead_created` | `user` (CGO) | `after { companyId, primaryContactId, ownerId, source, priority, stage, estimatedValueMinor, currency, expectedCloseOn, nextFollowUpOn }` |
+| `growth.lead_updated` | `user` (CGO) | `before` the same fields; `after` the same fields plus `nameChanged`, `sourceDetailChanged`, `version` |
+| `growth.lead_stage_changed` | `user` (CGO) | `before { stage, lostReason }`, `after { stage, lostReason, stageRevision }` |
+| `growth.lead_reopened` | `user` (CEO/CTO) | `before { stage, lostReason }`, `after { stage, lostReason: null, stageRevision }` |
+| `growth.lead_reassigned` | `user` (CEO/CTO) | `before { ownerId }`, `after { ownerId }` |
+| `growth.lead_archived` | `user` (CGO) | `before { archived: false, stage }`, `after { archived: true }` |
+| `growth.activity_logged` | `user` (CGO) | `after { leadId, companyId, contactId, kind, direction, outcome, hasProof, followUpChanged }` |
+| `growth.activity_voided` | `user` (CGO) | `after { voided: true }` |
+| `growth.proposal_version_created` | `user` (CGO) | `after { versionNo }` |
+| `growth.proposal_submitted` | `user` (CGO) | `after { versionNo, status }` |
+| `growth.proposal_approved` / `growth.proposal_rejected` | `user` (CEO/CTO) | `after { versionNo, status }` |
+| `growth.proposal_sent` / `growth.proposal_withdrawn` | `user` (CGO) | `after { versionNo, status }` |
+| `growth.proposal_acceptance_recorded` | `user` (CGO) | `after { versionNo, method }` |
+| `growth.proposal_confirmation_decided` | `user` (CEO/CTO) | `after { versionNo, decision }` |
+| `growth.lead_marked_won` | `user` (CGO) | `after { versionNo }` |
+
+Company names, contact names, emails, phones, links, notes and industry text are never recorded. Lead names, source details, stage and lost notes, activity summaries, proof links and void reasons are never recorded either. Proposal document links, summaries, acceptance evidence links, and proposal, acceptance, confirmation, rejection, withdrawal or refusal notes are never recorded.
+
 Each future module documents its audit actions here when it is added.
 
 ## Protection
@@ -107,3 +147,35 @@ Application logs (pino) are for operations. They redact `cookie`, `authorization
 - `apps/api/test/audit-immutability.test.ts`: changes are rejected for `crm_app` and for the owner `crm_migrator`.
 - Each module's integration tests assert the expected audit rows.
 - `modules/audit/audit.test.ts`: allowlists exclude private fields; only the Super Admin can read; no mutation routes exist.
+
+## Marketing audit actions (Phase 4B)
+
+Never recorded: campaign names and objectives, content titles and briefs, proof links, asset labels and URLs.
+
+| Action | Actor | Recorded fields |
+|---|---|---|
+| `marketing.campaign_created` | `user` (CMO) | `after { status, startsOn, endsOn }` |
+| `marketing.campaign_updated` | `user` (CMO) | `before { startsOn, endsOn }`, `after { startsOn, endsOn, nameChanged, objectiveChanged, startsOnChanged, endsOnChanged }` |
+| `marketing.campaign_status_changed` | `user` (CMO) | `before { status }`, `after { status }` |
+| `marketing.content_created` | `user` (CMO) | `after { status, channel, campaignId, plannedFor }` |
+| `marketing.content_updated` | `user` (CMO) | `before` the same fields; `after` the same fields plus `titleChanged`, `campaignIdChanged`, `plannedForChanged`, `briefChanged` |
+| `marketing.content_status_changed` | `user` (CMO) | `before { status }`, `after { status, proofRecorded }` |
+| `marketing.content_outcome_recorded` | `user` (CMO) | `before`/`after { reach, engagements, clicks }` |
+| `marketing.asset_added` / `marketing.asset_removed` | `user` (CMO) | `after { contentId, kind }` / `after { contentId, removed: true }` |
+
+## Operations audit actions (Phase 4C)
+
+Never recorded: incident titles, summaries, notes, resolutions and post-incident notes; release names, notes and checklist labels; automation purposes and triggers; run error summaries.
+
+| Action | Actor | Recorded fields |
+|---|---|---|
+| `operations.incident_created` | `user` (VP) | `after { severity, status, ownerId }` |
+| `operations.incident_updated` | `user` (VP) | `before { severity, ownerId }`, `after { severity, ownerId, titleChanged, severityChanged, ownerIdChanged, summaryChanged }` |
+| `operations.incident_status_changed` | `user` (VP) | `before { status }`, `after { status, noteAdded }` |
+| `operations.incident_note_added` / `operations.incident_post_note_added` | `user` (VP) | `after { status }` / `after { postIncidentNote: true }` |
+| `operations.release_created` / `operations.release_updated` | `user` (VP) | `after { environment, status, plannedFor }` / changed-field flags |
+| `operations.release_checklist_item_added` / `_changed` | `user` (VP) | `after { releaseId }` / `before { done }`, `after { releaseId, done }` |
+| `operations.release_status_changed` | `user` (VP or CEO/CTO) | `before { status }`, `after { status, environment, noteAdded }` |
+| `operations.automation_created` / `_updated` | `user` (VP) | `after { status }` / changed-field flags |
+| `operations.automation_status_changed` | `user` (VP or CEO/CTO) | `before { status }`, `after { status, noteAdded }` |
+| `operations.automation_run_recorded` | `user` (VP) | `after { automationId, outcome }` |

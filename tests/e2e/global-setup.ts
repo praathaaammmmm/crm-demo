@@ -35,6 +35,7 @@ import {
  */
 
 const API_SCRIPT = path.join(REPO_ROOT, "apps/api/dist/src/server.js");
+const WORKER_SCRIPT = path.join(REPO_ROOT, "apps/api/dist/src/worker.js");
 const WEB_DIR = path.join(REPO_ROOT, "apps/web");
 const NEXT_BIN = path.join(path.dirname(createRequire(import.meta.url).resolve("next/package.json", { paths: [WEB_DIR] })), "dist/bin/next");
 
@@ -131,11 +132,13 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
   let db: TestDatabase | undefined;
   let api: ChildProcess | undefined;
   let web: ChildProcess | undefined;
+  let worker: ChildProcess | undefined;
 
   const teardown = async () => {
     const failures: unknown[] = [];
     for (const step of [
       () => stop(web),
+      () => stop(worker),
       () => stop(api),
       () => rm(AUTH_DIR, { recursive: true, force: true }),
       () => db?.close() ?? Promise.resolve(),
@@ -163,6 +166,7 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
     const seedUsers = [
       [USERS.cfo, "cfo"],
       [USERS.cgo, "cgo"],
+      [USERS.cmo, "cmo"],
       [USERS.vp, "vp_engineering_quality"],
       [USERS.employee, "employee"],
       [USERS.authUser, "employee"],
@@ -191,14 +195,27 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
       NODE_ENV: "production",
       NEXT_TELEMETRY_DISABLED: "1",
       API_INTERNAL_URL: API_ORIGIN,
+      ORG_TIMEZONE: requireEnv("ORG_TIMEZONE"),
     });
     await waitUntilReady(`${WEB_ORIGIN}/login`, 200, web, 60_000);
+
+    // The real worker, as crm_worker on the throwaway database only, delivers meeting reminders.
+    worker = start(WORKER_SCRIPT, [], path.join(REPO_ROOT, "apps/api"), {
+      PATH: process.env["PATH"] ?? "",
+      NODE_ENV: "test",
+      LOG_LEVEL: "error",
+      DATABASE_URL_WORKER: withDatabase(requireEnv("DATABASE_URL_WORKER"), name),
+      WORKER_ID: "e2e-worker",
+    });
+    await sleep(1_000);
+    if (worker.exitCode !== null) throw new Error("Worker exited during startup");
 
     await mkdir(AUTH_DIR, { recursive: true, mode: 0o700 });
     const sessions = {
       ceo: await apiLogin(USERS.ceo),
       cfo: await apiLogin(USERS.cfo),
       cgo: await apiLogin(USERS.cgo),
+      cmo: await apiLogin(USERS.cmo),
       employee: await apiLogin(USERS.employee),
       vp: await apiLogin(USERS.vp),
     };

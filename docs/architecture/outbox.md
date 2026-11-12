@@ -27,7 +27,7 @@ Background work (session-expiry sweeps, health checks, and later meeting reminde
 
 | Role | Rights |
 |---|---|
-| `crm_app` (API) | INSERT only. **No rights in Phase 1**, because no Phase 1 module publishes from the API |
+| `crm_app` (API) | INSERT (`event_type`, `payload`, `dedupe_key`, `available_at`) only, from migration 0011. A trigger allows only `meetings.reminder_due` events with the exact payload and key format |
 | `crm_worker` | SELECT; UPDATE of `status`, `attempts`, `available_at`, `locked_by`, `locked_until`, `last_error`, `processed_at` only |
 | `crm_outbox_owner` (NOLOGIN) | INSERT, used only inside `outbox_schedule_system_event()` |
 | Everyone | No DELETE, no TRUNCATE |
@@ -121,30 +121,34 @@ Running it again changes nothing.
 - Logs at `warn` level when either count is above zero. In Phase 1, this log is how the Super Admin sees failed events.
 - Writes nothing except its own event status.
 
-## Stale events (from Phase 2): meeting reminders
+## Meeting reminders (implemented in Slice 5)
 
-This flow is documented now and implemented with the meetings module.
+See [ADR 0007](../adrs/0007-meetings-and-reminders.md). Worker entry point: `apps/api/src/worker.ts`; dispatcher, scheduler and health check in `apps/api/src/platform/worker/`.
 
 | Action | In one API transaction | Existing reminder rows |
 |---|---|---|
-| Create (version 1) | Insert meeting, audit, insert `meetings.reminder_due` `{meetingId, version: 1}` with `dedupe_key = meeting:{id}:reminder:v1`, `available_at = starts_at − offset` | — |
-| Reschedule (v1 → v2) | Update meeting with `version = 2`, audit, insert a new event `{meetingId, version: 2}` with `dedupe_key = meeting:{id}:reminder:v2` | Not touched |
-| Cancel (v2 → v3) | Set `status = cancelled`, `version = 3`, audit. No new reminder | Not touched |
+| Create (version 1) | Insert meeting and attendees, audit, insert one `meetings.reminder_due` event per reminder time still strictly in the future | — |
+| Edit (version n → n+1) | Update meeting, attendees and responses, audit, insert events for version n+1 | Not touched |
+| Cancel (version n → n+1) | Set `status = cancelled`, audit. No new events | Not touched |
 
-When the worker processes any reminder:
+Each event: payload `{meetingId, version, minutesBefore}` (10, 5 or 2), `dedupe_key = meeting:{id}:v{version}:m{minutesBefore}`, `available_at = starts_at − minutesBefore`.
+
+When the worker processes a reminder:
 
 ```
 BEGIN
-  SELECT status, version, starts_at FROM meetings WHERE id = $meetingId FOR SHARE
-  IF meeting missing OR archived OR cancelled OR version <> payload.version:
+  SELECT pg_advisory_xact_lock_shared(hashtextextended('meeting:' || $meetingId, 0))
+  SELECT status, version, starts_at <= now() FROM meetings WHERE id = $meetingId
+  IF meeting missing OR cancelled OR version <> payload.version OR already started:
       mark the event 'cancelled'
   ELSE:
-      insert notifications (unique on source_event_id + recipient_id)
+      insert one notification per current (not removed), active attendee who has not declined
+        ON CONFLICT (source_event_id, recipient_id) DO NOTHING
       mark the event 'done'
 COMMIT
 ```
 
-`FOR SHARE` makes a concurrent reschedule either wait or be seen. Stale events end as `cancelled`, and the current version's event fires normally.
+The API takes the same advisory lock exclusively whenever it edits, cancels or records a response, so a concurrent change is either finished and seen, or waits. This replaces the `FOR SHARE` row lock in the earlier design, because PostgreSQL requires UPDATE privilege for row locks and `crm_worker` has none on `meetings`.
 
 ## Not yet decided
 

@@ -3,6 +3,7 @@ import { Avatar } from "../../components/Avatar";
 import { IconButton } from "../../components/IconButton";
 import { roleLabel } from "../../lib/navigation";
 import { LogoutButton } from "../identity/LogoutButton";
+import { NotificationBell } from "../notifications/NotificationBell";
 import styles from "./Shell.module.css";
 
 export function TopBar({
@@ -30,6 +31,7 @@ export function TopBar({
         <span>Internal workspace</span>
       </div>
       <div className={styles.user}>
+        <NotificationBell />
         <Avatar name={user.name} />
         <span className={styles.userText}>
           <span>{user.name}</span>

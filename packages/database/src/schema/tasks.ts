@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, date, foreignKey, index, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, check, date, foreignKey, index, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { users } from "./organization.js";
 import { projects } from "./projects.js";
 
@@ -47,6 +47,8 @@ export const tasks = pgTable(
     }),
     index("tasks_assignee_status_idx").on(t.assigneeId, t.status),
     index("tasks_project_idx").on(t.projectId),
+    // Lets meetings reference a task together with its project (migration 0010).
+    unique("tasks_id_project_unique").on(t.id, t.projectId),
     index("tasks_status_due_idx").on(t.status, t.dueDate),
     check("tasks_title_length", sql`char_length(title) BETWEEN 1 AND 200`),
     check("tasks_description_length", sql`char_length(description) <= 10000`),

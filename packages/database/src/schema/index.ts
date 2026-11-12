@@ -7,3 +7,8 @@ export * from "./projects.js";
 export * from "./tasks.js";
 export * from "./quality.js";
 export * from "./meetings.js";
+export * from "./growth.js";
+export * from "./growth-leads.js";
+export * from "./growth-proposals.js";
+export * from "./marketing.js";
+export * from "./operations.js";

@@ -6,6 +6,8 @@ import { Icon } from "../../components/Icon";
 import type { NavSection } from "../../lib/navigation";
 import styles from "./Shell.module.css";
 
+const SECTION_ROOTS = new Set<string>(["/", "/growth", "/marketing", "/operations"]);
+
 /** Shows only the areas the user's role may use. The API still enforces every permission. */
 export function SidebarNav({ sections }: { sections: NavSection[] }) {
   const pathname = usePathname();
@@ -15,7 +17,8 @@ export function SidebarNav({ sections }: { sections: NavSection[] }) {
         <div key={section.title} className={styles.section}>
           <span className={styles.sectionTitle}>{section.title}</span>
           {section.items.map((item) => {
-            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            // Section roots match exactly, so they are not active on every child page.
+            const active = SECTION_ROOTS.has(item.href) ? pathname === item.href : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}

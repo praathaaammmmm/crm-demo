@@ -11,6 +11,7 @@ test.describe("employee", () => {
     await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link")).toHaveText([
       "Home",
       "My tasks",
+      "Meetings",
       "Projects",
       "Defects",
     ]);
@@ -30,6 +31,7 @@ test.describe("CFO", () => {
     await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link")).toHaveText([
       "Home",
       "My tasks",
+      "Meetings",
       "Projects",
       "Defects",
       "Users",

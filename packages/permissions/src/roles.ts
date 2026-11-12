@@ -1,7 +1,10 @@
 import { APPROVAL_PERMISSIONS } from "./catalog/approvals.js";
 import { ORGANIZATION_PERMISSIONS } from "./catalog/organization.js";
 import { PROJECT_PERMISSIONS } from "./catalog/projects.js";
+import { GROWTH_PERMISSIONS } from "./catalog/growth.js";
+import { MARKETING_PERMISSIONS } from "./catalog/marketing.js";
 import { MEETING_PERMISSIONS, NOTIFICATION_PERMISSIONS } from "./catalog/meetings.js";
+import { OPERATIONS_PERMISSIONS } from "./catalog/operations.js";
 import { QUALITY_PERMISSIONS } from "./catalog/quality.js";
 import { TASK_PERMISSIONS } from "./catalog/tasks.js";
 
@@ -42,6 +45,9 @@ export const PERMISSIONS = [
   ...QUALITY_PERMISSIONS,
   ...MEETING_PERMISSIONS,
   ...NOTIFICATION_PERMISSIONS,
+  ...GROWTH_PERMISSIONS,
+  ...MARKETING_PERMISSIONS,
+  ...OPERATIONS_PERMISSIONS,
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
@@ -64,14 +70,27 @@ const REQUESTER: readonly Permission[] = [
   "approvals:request_deactivation",
 ];
 
+/** Area write permissions the CEO/CTO never holds: it reads those areas and approves where stated. */
+const CEO_EXCLUDED: readonly Permission[] = ["growth:manage", "marketing:manage", "operations:manage"];
+
 /** Deny by default: a role has exactly these permissions and nothing else. */
 export const ROLE_GRANTS: Readonly<Record<Role, readonly Permission[]>> = {
-  ceo_cto: PERMISSIONS,
+  // Read-only Growth, Marketing and Operations access: every permission except the area manage permissions
+  // (ADR 0008, 0011, 0012). The CEO/CTO alone approves production releases and automation go-live.
+  ceo_cto: PERMISSIONS.filter((permission) => !CEO_EXCLUDED.includes(permission)),
   cfo: REQUESTER,
-  cgo: REQUESTER,
-  cmo: REQUESTER,
+  cgo: [...REQUESTER, "growth:read_all", "growth:read_contacts", "growth:manage"],
+  cmo: [...REQUESTER, "marketing:read_all", "marketing:manage"],
   // Read-only access to all tasks and projects; task creation, editing and review stay CEO-only.
-  vp_engineering_quality: [...REQUESTER, "tasks:read_all", "projects:read_all", "quality:read_all", "quality:manage"],
+  vp_engineering_quality: [
+    ...REQUESTER,
+    "tasks:read_all",
+    "projects:read_all",
+    "quality:read_all",
+    "quality:manage",
+    "operations:read_all",
+    "operations:manage",
+  ],
   founder: ASSIGNEE,
   employee: ASSIGNEE,
   intern: ASSIGNEE,

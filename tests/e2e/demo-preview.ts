@@ -242,6 +242,7 @@ async function main(): Promise<void> {
     NODE_ENV: "production",
     NEXT_TELEMETRY_DISABLED: "1",
     API_INTERNAL_URL: API_ORIGIN,
+    ORG_TIMEZONE: requireEnv("ORG_TIMEZONE"),
   });
   await waitUntilReady(`http://127.0.0.1:${String(WEB_PORT)}/login`, 200, web, 60_000);
 

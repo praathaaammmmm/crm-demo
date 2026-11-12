@@ -19,7 +19,9 @@ export type IconName =
   | "info"
   | "chevron"
   | "bug"
-  | "gauge";
+  | "gauge"
+  | "bell"
+  | "building";
 
 const PATHS: Record<IconName, string> = {
   home: "M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z",
@@ -41,6 +43,8 @@ const PATHS: Record<IconName, string> = {
   chevron: "M10 7l5 5-5 5",
   bug: "M9 8.5a3 3 0 0 1 6 0 M8 10h8v4a4 4 0 0 1-8 0z M12 10v8 M8 12.5H4.5 M16 12.5h3.5 M8.5 16.5l-3 2 M15.5 16.5l3 2 M8.5 10L6 7.5 M15.5 10L18 7.5",
   gauge: "M4.5 16a7.5 7.5 0 1 1 15 0 M12 16l3.5-4.5 M7 16h.5 M16.5 16h.5",
+  bell: "M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.5h-14z M10 19.5a2 2 0 0 0 4 0",
+  building: "M5 20V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v15 M15 9h3a1 1 0 0 1 1 1v10 M3.5 20h17 M8 8h1 M11 8h1 M8 11.5h1 M11 11.5h1 M8 15h1 M11 15h1",
 };
 
 export function Icon({ name, label }: { name: IconName; label?: string }) {

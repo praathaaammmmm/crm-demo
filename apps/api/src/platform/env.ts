@@ -33,6 +33,15 @@ const bootstrapSchema = z.object({
 });
 export type BootstrapEnv = z.infer<typeof bootstrapSchema>;
 
+const workerSchema = z.object({
+  LOG_LEVEL: logLevel.default("info"),
+  /** Connection for crm_worker only. */
+  DATABASE_URL_WORKER: z.string().min(1),
+  /** Identifies this worker in outbox locks; defaults to hostname:pid. */
+  WORKER_ID: z.string().trim().min(1).max(100).optional(),
+});
+export type WorkerEnv = z.infer<typeof workerSchema>;
+
 function parse<S extends z.ZodType>(schema: S, source: NodeJS.ProcessEnv): z.output<S> {
   const result = schema.safeParse(source);
   if (!result.success) {
@@ -50,4 +59,8 @@ export function loadServerEnv(source: NodeJS.ProcessEnv = process.env): ServerEn
 
 export function loadBootstrapEnv(source: NodeJS.ProcessEnv = process.env): BootstrapEnv {
   return parse(bootstrapSchema, source);
+}
+
+export function loadWorkerEnv(source: NodeJS.ProcessEnv = process.env): WorkerEnv {
+  return parse(workerSchema, source);
 }

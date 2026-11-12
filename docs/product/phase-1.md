@@ -58,9 +58,19 @@ Added after the original Phase 1 scope. See [ADR 0006](../adrs/0006-quality-work
 - The CEO/CTO and VP see exact counts of open critical/high defects and failed/blocked checks, and per-project readiness and blockers (rows capped at 250 with a notice).
 - Assignees see and respond only to quality items on their current tasks.
 
+### Meetings (Slice 5)
+
+Added after the original Phase 1 scope. See [ADR 0007](../adrs/0007-meetings-and-reminders.md).
+
+- The CEO/CTO schedules, edits and cancels meetings with a title, description, start time and duration (in the organisation's time zone), attendees, an optional location and https meeting link, and an optional project or task reference.
+- Invitees see only their own meetings in an Agenda or Week view, and accept or decline. Changing a meeting's time resets every response to pending; other edits keep responses.
+- Invitees who have not declined get in-app reminders 10, 5 and 2 minutes before the start. Rescheduled or cancelled meetings never send reminders for the old time.
+- The CEO/CTO's dashboard shows meeting and response counts. No presence or join tracking.
+
 ### Background worker
 
 - Ends expired sessions and records their end time.
+- Delivers meeting reminders through the outbox (Slice 5).
 - Runs a health check every 5 minutes and logs warnings for failed or stuck background events.
 
 ## Screens
@@ -75,6 +85,8 @@ Added after the original Phase 1 scope. See [ADR 0006](../adrs/0006-quality-work
 | `/audit` | CEO/CTO |
 | `/attendance` | Everyone (own); CEO/CTO (all) |
 | `/quality` | CEO/CTO and VP Engineering & Quality |
+| `/meetings`, `/meetings/[id]` | Everyone (own invitations); CEO/CTO (all) |
+| `/notifications` | Everyone (own) |
 | `/defects`, `/defects/[id]` | Everyone with tasks (own task defects); CEO/CTO and VP (all) |
 
 ## Acceptance criteria

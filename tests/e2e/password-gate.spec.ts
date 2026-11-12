@@ -20,9 +20,9 @@ test("a user with a temporary password must change it before using the app", asy
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole("heading", { name: `Welcome, ${USERS.newUser.name}` })).toBeVisible();
 
-  // Normal role permissions now apply: an employee sees Home, My tasks, Projects and Defects.
+  // Normal role permissions now apply: an employee sees Home, My tasks, Meetings, Projects and Defects.
   const nav = page.getByRole("navigation", { name: "Main" });
-  await expect(nav.getByRole("link")).toHaveText(["Home", "My tasks", "Projects", "Defects"]);
+  await expect(nav.getByRole("link")).toHaveText(["Home", "My tasks", "Meetings", "Projects", "Defects"]);
 
   // The gate page is no longer reachable once the change is done.
   await page.goto("/change-password");

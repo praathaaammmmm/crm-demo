@@ -89,6 +89,8 @@ export interface TestDatabase {
   app: Database;
   /** Connected as crm_migrator, for test setup and assertions. */
   migrator: Database;
+  /** Connected as crm_worker, exactly like the worker process. */
+  worker: Database;
   query<T extends object>(text: string, values?: unknown[]): Promise<T[]>;
   close(): Promise<void>;
 }
@@ -115,10 +117,13 @@ export async function createTestDatabase(): Promise<TestDatabase> {
     opened.push(app);
     const migrator = await connectTo(requireEnv("DATABASE_URL_MIGRATOR"), name, "crm-test-migrator");
     opened.push(migrator);
+    const worker = await connectTo(requireEnv("DATABASE_URL_WORKER"), name, "crm-test-worker");
+    opened.push(worker);
 
     return {
       app: app.db,
       migrator: migrator.db,
+      worker: worker.db,
       async query<T extends object>(text: string, values: unknown[] = []) {
         const result = await migrator.pool.query<T>(text, values);
         return result.rows;
@@ -126,6 +131,7 @@ export async function createTestDatabase(): Promise<TestDatabase> {
       async close() {
         await app.pool.end();
         await migrator.pool.end();
+        await worker.pool.end();
         await dropTestDatabase(name);
       },
     };

@@ -34,6 +34,20 @@ A user is **present** on a day if they have at least one `login` event on that c
 
 The session check on each request writes nothing. Sessions expire at a fixed time, so no activity data is needed.
 
+## Meetings
+
+- Meeting "attendance" means an invitee's response only: pending, accepted or declined. Nothing records whether or when anyone joined, how long they stayed, or what they clicked.
+- The CEO/CTO's meeting summary counts responses and meeting statuses only.
+- The notification bell reads the unread count every 30 seconds while the tab is visible. The request is not logged as activity and nothing about it is stored.
+
+## Growth contacts
+
+- Growth contacts are personal data about people outside the organisation. Only the CGO and the CEO/CTO can see them.
+- Fields are minimal: name, role, email, phone, LinkedIn and website. Nothing is imported or scraped, and there is no export.
+- Contact details never appear in audit events or logs.
+- Activities record outreach the CGO did manually; the CRM never sends messages, imports inboxes or tracks opens. Activity summaries and proof links are visible only to the CGO and the CEO/CTO and never appear in audit events or logs.
+- **O1 retention and redaction policy:** a policy for Growth data is an open decision and must be made before production use. It covers contact data, activity summaries and proof links, proposal document links, acceptance evidence links, and proposal, acceptance and confirmation notes. No deletion, cleanup, anonymisation, redaction job or export is implemented until that policy is explicitly approved.
+
 ## Other personal data rules
 
 - Email addresses are visible only to the Super Admin.
@@ -49,3 +63,7 @@ Any new data collection about people requires explicit user approval and an upda
 
 - Retention periods for `attendance_events` and `sessions` are undecided future policy decisions.
 - No cleanup job exists or will be implemented until a retention policy is approved. Removing rows is a deletion and needs explicit approval.
+
+## Growth deployment gate
+
+- **O10:** no Growth migration is applied to Neon before Neon verification passes. This includes proposal migrations 0016 and 0017; local test-template verification does not authorise a Neon migration.

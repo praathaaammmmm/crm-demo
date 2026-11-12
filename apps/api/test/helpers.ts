@@ -37,6 +37,21 @@ export function dateFromToday(days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+/** A wall-clock "YYYY-MM-DDTHH:MM" in TEST_TIMEZONE, `minutes` from now (seconds are dropped). */
+export function localDateTimeIn(minutes: number): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TEST_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(Date.now() + minutes * 60_000));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+}
+
 export function createSuperAdmin(migrator: Database): Promise<{ userId: string }> {
   return bootstrapSuperAdmin(migrator, {
     ...SUPER_ADMIN,

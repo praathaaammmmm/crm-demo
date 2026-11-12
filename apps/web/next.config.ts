@@ -6,6 +6,9 @@ const apiOrigin = new URL(apiInternalUrl).origin;
 
 const config: NextConfig = {
   poweredByHeader: false,
+  experimental: {
+    useTypeScriptCli: false,
+  },
 
   // The browser calls same-origin /api/v1/*, so it sends its real Origin and receives the session cookie.
   rewrites() {

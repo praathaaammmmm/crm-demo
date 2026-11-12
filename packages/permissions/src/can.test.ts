@@ -30,6 +30,41 @@ describe("can", () => {
     }
   });
 
+  it("gives Growth access only to the CEO/CTO (read-only) and the CGO (read and manage)", () => {
+    for (const role of ROLES) {
+      const reads = role === "ceo_cto" || role === "cgo";
+      expect(can({ role }, "growth:read_all")).toBe(reads);
+      expect(can({ role }, "growth:read_contacts")).toBe(reads);
+      expect(can({ role }, "growth:manage")).toBe(role === "cgo");
+    }
+  });
+
+  it("lets only the CEO/CTO reassign leads and reopen lost leads", () => {
+    for (const role of ROLES) {
+      expect(can({ role }, "growth:reassign")).toBe(role === "ceo_cto");
+      expect(can({ role }, "growth:reopen")).toBe(role === "ceo_cto");
+    }
+  });
+
+  it("gives Marketing access only to the CEO/CTO (read-only) and the CMO (read and manage)", () => {
+    for (const role of ROLES) {
+      expect(can({ role }, "marketing:read_all")).toBe(role === "ceo_cto" || role === "cmo");
+      expect(can({ role }, "marketing:manage")).toBe(role === "cmo");
+    }
+  });
+
+  it("gives Operations access only to the CEO/CTO (read and approve) and the VP Engineering & Quality (read and manage)", () => {
+    for (const role of ROLES) {
+      expect(can({ role }, "operations:read_all")).toBe(role === "ceo_cto" || role === "vp_engineering_quality");
+      expect(can({ role }, "operations:manage")).toBe(role === "vp_engineering_quality");
+      expect(can({ role }, "operations:approve")).toBe(role === "ceo_cto");
+    }
+  });
+
+  it("lets only the CEO/CTO decide proposals and acceptance confirmations", () => {
+    for (const role of ROLES) expect(can({ role }, "growth:approve_proposals")).toBe(role === "ceo_cto");
+  });
+
   it("lets every role read and answer its own meetings and notifications; only the CEO/CTO manages or reads all meetings", () => {
     for (const role of ROLES) {
       expect(can({ role }, "meetings:read_invited")).toBe(true);

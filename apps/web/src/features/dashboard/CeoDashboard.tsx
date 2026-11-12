@@ -3,6 +3,10 @@ import { directoryPageSchema } from "@crm/contracts/organization";
 import Link from "next/link";
 import { Icon } from "../../components/Icon";
 import { NotAllowed } from "../../components/NotAllowed";
+import { GrowthSummary } from "../growth/GrowthSummary";
+import { MarketingTiles } from "../marketing/MarketingTiles";
+import { MeetingsSection } from "../meetings/MeetingsSection";
+import { OperationsTiles } from "../operations/OperationsTiles";
 import { QualityOverview } from "../quality/QualityOverview";
 import { collectPages, dataOrForbidden } from "../../lib/server-api";
 import styles from "./Dashboard.module.css";
@@ -78,6 +82,14 @@ export async function CeoDashboard() {
         </div>
         <ReviewQueuePreview />
       </section>
+
+      <GrowthSummary />
+
+      <MarketingTiles />
+
+      <OperationsTiles />
+
+      <MeetingsSection summary />
 
       <QualityOverview canManage previewRows={5} />
     </>

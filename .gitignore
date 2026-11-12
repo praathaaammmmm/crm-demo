@@ -16,3 +16,12 @@ test-results/
 # Local tooling caches
 .npm-cache/
 .playwright-browsers/
+# Added by code-review-graph
+.code-review-graph/
+
+.claude/
+.mcp.json
+
+.vercel/
+tests/e2e/.auth/
+tests/e2e/.results/

@@ -3,7 +3,28 @@ import type { IconName } from "../components/Icon";
 
 /** UI visibility only. The API enforces every permission regardless of what is shown. */
 
-export type NavHref = "/" | "/tasks" | "/projects" | "/review" | "/quality" | "/defects" | "/users" | "/approvals";
+export type NavHref =
+  | "/"
+  | "/tasks"
+  | "/meetings"
+  | "/projects"
+  | "/review"
+  | "/quality"
+  | "/defects"
+  | "/growth"
+  | "/growth/companies"
+  | "/growth/leads"
+  | "/growth/proposals"
+  | "/growth/proposals/queue"
+  | "/marketing"
+  | "/marketing/campaigns"
+  | "/marketing/content"
+  | "/operations"
+  | "/operations/incidents"
+  | "/operations/releases"
+  | "/operations/automations"
+  | "/users"
+  | "/approvals";
 
 export interface NavItem {
   href: NavHref;
@@ -12,7 +33,7 @@ export interface NavItem {
 }
 
 export interface NavSection {
-  title: "Workspace" | "Operations" | "Administration";
+  title: "Workspace" | "Operations" | "Growth" | "Marketing" | "Engineering" | "Administration";
   items: NavItem[];
 }
 
@@ -28,6 +49,16 @@ export const canReadAllTasks = (role: Role): boolean => can({ role }, "tasks:rea
 export const canCreateTasks = (role: Role): boolean => can({ role }, "tasks:create");
 export const canManageTasks = (role: Role): boolean => can({ role }, "tasks:manage");
 export const canReviewTasks = (role: Role): boolean => can({ role }, "tasks:review");
+export const canSeeMeetings = (role: Role): boolean => can({ role }, "meetings:read_all") || can({ role }, "meetings:read_invited");
+export const canManageMeetings = (role: Role): boolean => can({ role }, "meetings:manage");
+export const canSeeMeetingSummary = (role: Role): boolean => can({ role }, "meetings:read_all");
+export const canSeeGrowth = (role: Role): boolean => can({ role }, "growth:read_all");
+export const canManageGrowth = (role: Role): boolean => can({ role }, "growth:manage");
+export const canSeeMarketing = (role: Role): boolean => can({ role }, "marketing:read_all");
+export const canManageMarketing = (role: Role): boolean => can({ role }, "marketing:manage");
+export const canSeeOperations = (role: Role): boolean => can({ role }, "operations:read_all");
+export const canManageOperations = (role: Role): boolean => can({ role }, "operations:manage");
+export const canApproveOperations = (role: Role): boolean => can({ role }, "operations:approve");
 export const canSeeQuality = (role: Role): boolean => can({ role }, "quality:read_all");
 export const canManageQuality = (role: Role): boolean => can({ role }, "quality:manage");
 export const canSeeDefects = (role: Role): boolean => can({ role }, "quality:read_all") || can({ role }, "quality:read_assigned");
@@ -36,12 +67,37 @@ export const canSeeDefects = (role: Role): boolean => can({ role }, "quality:rea
 export function navigationFor(role: Role): NavSection[] {
   const workspace: NavItem[] = [{ href: "/", label: canDecideApprovals(role) ? "Dashboard" : "Home", icon: "home" }];
   if (canSeeTasks(role)) workspace.push({ href: "/tasks", label: canReadAllTasks(role) ? "Tasks" : "My tasks", icon: "tasks" });
+  if (canSeeMeetings(role)) workspace.push({ href: "/meetings", label: "Meetings", icon: "calendar" });
 
   const operations: NavItem[] = [];
   if (canSeeProjects(role)) operations.push({ href: "/projects", label: "Projects", icon: "folder" });
   if (canReviewTasks(role)) operations.push({ href: "/review", label: "Review", icon: "inbox" });
   if (canSeeQuality(role)) operations.push({ href: "/quality", label: "Quality", icon: "gauge" });
   if (canSeeDefects(role)) operations.push({ href: "/defects", label: "Defects", icon: "bug" });
+
+  const growth: NavItem[] = [];
+  if (canSeeGrowth(role)) {
+    growth.push({ href: "/growth", label: "Overview", icon: "gauge" });
+    growth.push({ href: "/growth/leads", label: "Leads", icon: "board" });
+    growth.push({ href: "/growth/companies", label: "Companies", icon: "building" });
+    growth.push({ href: "/growth/proposals", label: "Proposals", icon: "board" });
+    if (can({ role }, "growth:approve_proposals")) growth.push({ href: "/growth/proposals/queue", label: "Approval queue", icon: "inbox" });
+  }
+
+  const marketing: NavItem[] = [];
+  if (canSeeMarketing(role)) {
+    marketing.push({ href: "/marketing", label: "Marketing overview", icon: "gauge" });
+    marketing.push({ href: "/marketing/campaigns", label: "Campaigns", icon: "folder" });
+    marketing.push({ href: "/marketing/content", label: "Content calendar", icon: "calendar" });
+  }
+
+  const engineering: NavItem[] = [];
+  if (canSeeOperations(role)) {
+    engineering.push({ href: "/operations", label: "Ops overview", icon: "gauge" });
+    engineering.push({ href: "/operations/incidents", label: "Incidents", icon: "alert" });
+    engineering.push({ href: "/operations/releases", label: "Releases", icon: "list" });
+    engineering.push({ href: "/operations/automations", label: "Automations", icon: "board" });
+  }
 
   const administration: NavItem[] = [];
   if (canReadDirectory(role)) administration.push({ href: "/users", label: "Users", icon: "users" });
@@ -50,6 +106,9 @@ export function navigationFor(role: Role): NavSection[] {
   const sections: NavSection[] = [
     { title: "Workspace", items: workspace },
     { title: "Operations", items: operations },
+    { title: "Growth", items: growth },
+    { title: "Marketing", items: marketing },
+    { title: "Engineering", items: engineering },
     { title: "Administration", items: administration },
   ];
   return sections.filter((section) => section.items.length > 0);

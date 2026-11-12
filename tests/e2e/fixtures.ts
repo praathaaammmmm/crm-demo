@@ -11,7 +11,7 @@ export const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 /** Saved logins for the throwaway database. Deleted by global teardown. */
 export const AUTH_DIR = path.join(import.meta.dirname, ".auth");
 
-export type SavedRole = "ceo" | "cfo" | "cgo" | "employee" | "vp";
+export type SavedRole = "ceo" | "cfo" | "cgo" | "cmo" | "employee" | "vp";
 export const authFile = (role: SavedRole): string => path.join(AUTH_DIR, `${role}.json`);
 
 const user = (key: string, name: string) => ({
@@ -25,6 +25,7 @@ export const USERS = {
   ceo: { email: "ceo@example.test", name: "Test CEO", password: "test-super-admin-password" },
   cfo: user("cfo", "Test CFO"),
   cgo: user("cgo", "Test CGO"),
+  cmo: user("cmo", "Test CMO"),
   vp: user("vp", "Test VP"),
   employee: user("employee", "Test Employee"),
   authUser: user("auth-user", "Auth User"),
