@@ -3,12 +3,17 @@ import { Avatar } from "../../components/Avatar";
 import { DataTable, type Column } from "../../components/DataTable";
 import { Pill } from "../../components/Pill";
 import { roleLabel } from "../../lib/navigation";
+import { DeactivateUserDialog } from "./DeactivateUserDialog";
 import styles from "./Organization.module.css";
 
 type DirectoryItem = DirectoryPage["items"][number];
 
 /** The email column appears only when the API included emails (CEO/CTO only). */
-export function UserTable({ users }: { users: DirectoryItem[] }) {
+export function UserTable({ users, viewer }: { users: DirectoryItem[]; viewer?: { id: string; canDeactivate: boolean } }) {
+  // Never the viewer's own row, never the CEO/CTO (the sole Super Admin), and only active users.
+  const deactivatable = (user: DirectoryItem) =>
+    viewer !== undefined && viewer.canDeactivate && user.id !== viewer.id && user.role !== "ceo_cto" && user.status === "active";
+  const showActions = users.some(deactivatable);
   const showEmail = users.some((user) => user.email !== undefined);
   const columns: Column<DirectoryItem>[] = [
     {
@@ -49,6 +54,20 @@ export function UserTable({ users }: { users: DirectoryItem[] }) {
           <Pill dot>Deactivated</Pill>
         ),
     },
+    ...(showActions
+      ? [
+          {
+            key: "actions",
+            header: "Actions",
+            render: (user: DirectoryItem) =>
+              deactivatable(user) ? (
+                <span className={styles.actionsCell}>
+                  <DeactivateUserDialog userId={user.id} userName={user.name} />
+                </span>
+              ) : null,
+          },
+        ]
+      : []),
   ];
   return <DataTable caption="Users" columns={columns} rows={users} rowKey={(user) => user.id} density="compact" />;
 }

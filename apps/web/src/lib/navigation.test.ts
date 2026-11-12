@@ -1,6 +1,6 @@
 import type { Role } from "@crm/permissions";
 import { describe, expect, it } from "vitest";
-import { canCreateUsers, navigationFor, navItemsFor } from "./navigation";
+import { canCreateUsers, canDeactivateUsers, navigationFor, navItemsFor } from "./navigation";
 
 const REQUESTER = ["Home", "My tasks", "Meetings", "Projects", "Defects", "Users", "Approvals"];
 const ASSIGNEE = ["Home", "My tasks", "Meetings", "Projects", "Defects"];
@@ -69,6 +69,14 @@ describe("canCreateUsers", () => {
   it("is true only for the CEO/CTO", () => {
     for (const role of Object.keys(EXPECTED) as Role[]) {
       expect(canCreateUsers(role)).toBe(role === "ceo_cto");
+    }
+  });
+});
+
+describe("canDeactivateUsers", () => {
+  it("is true only for the CEO/CTO", () => {
+    for (const role of Object.keys(EXPECTED) as Role[]) {
+      expect(canDeactivateUsers(role)).toBe(role === "ceo_cto");
     }
   });
 });
