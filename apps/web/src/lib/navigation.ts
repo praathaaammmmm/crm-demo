@@ -39,6 +39,7 @@ export interface NavSection {
 
 export const canDecideApprovals = (role: Role): boolean => can({ role }, "approvals:decide");
 export const canReadDirectory = (role: Role): boolean => can({ role }, "users:read_directory");
+export const canCreateUsers = (role: Role): boolean => can({ role }, "users:create");
 export const canSeeApprovals = (role: Role): boolean =>
   can({ role }, "approvals:read_all") || Object.values(REQUEST_PERMISSION).some((p) => can({ role }, p));
 export const canSeeProjects = (role: Role): boolean =>

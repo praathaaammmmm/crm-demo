@@ -3,19 +3,19 @@ import Link from "next/link";
 import { EmptyState } from "../../../components/EmptyState";
 import { NotAllowed } from "../../../components/NotAllowed";
 import { PageContent, PageToolbar } from "../../../components/PageToolbar";
+import { CreateUserDialog } from "../../../features/organization/CreateUserDialog";
 import { UserTable } from "../../../features/organization/UserTable";
-import { canReadDirectory } from "../../../lib/navigation";
+import { canCreateUsers, canReadDirectory } from "../../../lib/navigation";
 import { isUuid, readParam, type SearchParams } from "../../../lib/search-params";
 import { dataOrForbidden, serverGet } from "../../../lib/server-api";
 import { requireAppSession } from "../../../lib/session";
 
 export default async function UsersPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const { user } = await requireAppSession();
-  const toolbar = <PageToolbar icon="users" title="Users" />;
   if (!canReadDirectory(user.role)) {
     return (
       <>
-        {toolbar}
+        <PageToolbar icon="users" title="Users" />
         <PageContent>
           <NotAllowed />
         </PageContent>
@@ -27,6 +27,14 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const validCursor = isUuid(cursor) ? cursor : undefined;
   const page = dataOrForbidden(
     await serverGet("/users", directoryPageSchema, validCursor === undefined ? {} : { cursor: validCursor }),
+  );
+
+  const toolbar = (
+    <PageToolbar
+      icon="users"
+      title="Users"
+      primaryAction={page !== "forbidden" && canCreateUsers(user.role) ? <CreateUserDialog /> : undefined}
+    />
   );
 
   return (

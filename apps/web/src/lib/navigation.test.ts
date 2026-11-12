@@ -1,6 +1,6 @@
 import type { Role } from "@crm/permissions";
 import { describe, expect, it } from "vitest";
-import { navigationFor, navItemsFor } from "./navigation";
+import { canCreateUsers, navigationFor, navItemsFor } from "./navigation";
 
 const REQUESTER = ["Home", "My tasks", "Meetings", "Projects", "Defects", "Users", "Approvals"];
 const ASSIGNEE = ["Home", "My tasks", "Meetings", "Projects", "Defects"];
@@ -61,6 +61,14 @@ describe("navigationFor", () => {
       const hrefs = navItemsFor(role).map((item) => item.href);
       expect(hrefs.includes("/quality")).toBe(role === "ceo_cto" || role === "vp_engineering_quality");
       expect(hrefs.includes("/defects")).toBe(true);
+    }
+  });
+});
+
+describe("canCreateUsers", () => {
+  it("is true only for the CEO/CTO", () => {
+    for (const role of Object.keys(EXPECTED) as Role[]) {
+      expect(canCreateUsers(role)).toBe(role === "ceo_cto");
     }
   });
 });
