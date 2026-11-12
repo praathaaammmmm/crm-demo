@@ -129,14 +129,18 @@ export interface BarRow {
   text: string;
 }
 
-/** Horizontal bars with labels and printed values. `label` names the list for assistive technology. */
-export function BarList({ label, rows, legend }: { label: string; rows: BarRow[]; legend?: string }) {
+/**
+ * Horizontal bars with labels and printed values. `label` names the list for assistive technology.
+ * `total` adds a one-line total above the bars (e.g. "10 tasks"), so shares have a visible base.
+ */
+export function BarList({ label, rows, legend, total }: { label: string; rows: BarRow[]; legend?: string; total?: string }) {
   const max = Math.max(0, ...rows.map((row) => row.value));
   return (
     <>
+      {total ? <p className={styles.chartTotal}>{total}</p> : null}
       <ul className={styles.bars} aria-label={label}>
         {rows.map((row) => (
-          <li key={row.key} className={styles.barRow}>
+          <li key={row.key} className={styles.barRow} title={`${row.label}: ${row.text}`}>
             <span className={styles.barLabel}>{row.label}</span>
             <span className={styles.barTrack} aria-hidden="true">
               <span className={styles.barFill} style={{ width: `${String(barPercent(row.value, max))}%` }} />
@@ -148,6 +152,11 @@ export function BarList({ label, rows, legend }: { label: string; rows: BarRow[]
       {legend ? <p className={styles.legend}>{legend}</p> : null}
     </>
   );
+}
+
+/** Responsive grid of chart panels: one column on narrow screens, two or three where they fit. */
+export function ChartGrid({ children }: { children: ReactNode }) {
+  return <div className={styles.chartGrid}>{children}</div>;
 }
 
 export interface ActionItem {

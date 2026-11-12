@@ -23,6 +23,11 @@ const serverSchema = z.object({
   DATABASE_URL_APP: z.string().min(1),
   /** Defines "today" for due dates and overdue tasks. */
   ORG_TIMEZONE: z.string().refine(isTimeZone),
+  /** Public read-only demo: the API refuses every write except sign-in and sign-out. Only "true" enables it. */
+  DEMO_MODE: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
 });
 export type ServerEnv = z.infer<typeof serverSchema>;
 

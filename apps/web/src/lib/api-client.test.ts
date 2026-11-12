@@ -1,6 +1,6 @@
 import { sessionResponseSchema } from "@crm/contracts/identity";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiRequest, interpretResponse, noContent, redirectForSession } from "./api-client";
+import { apiRequest, failureMessage, interpretResponse, noContent, redirectForSession } from "./api-client";
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -32,6 +32,7 @@ describe("interpretResponse", () => {
     [401, { code: "UNAUTHENTICATED", message: "x" }, { kind: "unauthenticated" }],
     [403, { code: "PASSWORD_CHANGE_REQUIRED", message: "x" }, { kind: "password_change_required" }],
     [403, { code: "FORBIDDEN", message: "Forbidden" }, { kind: "forbidden", message: "Forbidden" }],
+    [403, { code: "DEMO_READ_ONLY", message: "anything" }, { kind: "demo_read_only" }],
     [404, { code: "NOT_FOUND", message: "Not found" }, { kind: "not_found" }],
     [409, { code: "CONFLICT", message: "Already decided" }, { kind: "conflict", message: "Already decided" }],
     [429, { code: "RATE_LIMITED", message: "x" }, { kind: "rate_limited" }],
@@ -91,5 +92,11 @@ describe("redirectForSession", () => {
     expect(redirectForSession({ replace }, { kind: "password_change_required" })).toBe(true);
     expect(redirectForSession({ replace }, { kind: "forbidden", message: "x" })).toBe(false);
     expect(replace.mock.calls).toEqual([["/login"], ["/change-password"]]);
+  });
+});
+
+describe("failureMessage", () => {
+  it("shows the fixed public demo message for a refused write", () => {
+    expect(failureMessage({ kind: "demo_read_only" })).toBe("This public demo is read-only.");
   });
 });

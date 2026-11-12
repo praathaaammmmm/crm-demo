@@ -22,6 +22,8 @@ import { changePassword, login, logout, resolveSession } from "./identity.servic
 export interface IdentityRouteOptions {
   db: Database;
   cookieSecure: boolean;
+  /** Public demo: failed sign-ins never lock the shared demo accounts. */
+  demoMode?: boolean;
 }
 
 /** Explicit allowlist of response fields. */
@@ -34,7 +36,7 @@ function sessionBody(session: AuthSession): SessionResponse {
   });
 }
 
-export function identityRoutes({ db, cookieSecure }: IdentityRouteOptions) {
+export function identityRoutes({ db, cookieSecure, demoMode = false }: IdentityRouteOptions) {
   return (app: FastifyInstance, _options: unknown, done: (error?: Error) => void): void => {
     // These identity routes stay reachable while a temporary password must be changed.
     const authenticated = requireSession((token) => resolveSession(db, token), {
@@ -43,7 +45,7 @@ export function identityRoutes({ db, cookieSecure }: IdentityRouteOptions) {
 
     app.post("/login", { config: { rateLimit: LOGIN_RATE_LIMIT } }, async (request, reply) => {
       const input = parseInput(loginRequestSchema, request.body);
-      const result = await login(db, contextFrom(request), input);
+      const result = await login(db, contextFrom(request), input, { countFailures: !demoMode });
       setSessionCookie(reply, result.token, result.session.sessionExpiresAt, cookieSecure);
       return reply.code(200).send(sessionBody(result.session));
     });

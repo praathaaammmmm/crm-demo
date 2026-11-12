@@ -1,14 +1,16 @@
 import { addDays } from "@crm/contracts/growth-reports";
 import { contentPageSchema, marketingSummarySchema, type Content } from "@crm/contracts/marketing";
 import Link from "next/link";
+import { DonutChart } from "../../../components/Charts";
 import { DataTable } from "../../../components/DataTable";
-import { ActionList, BarList, DashboardGrid, KpiStrip, Panel, PanelEmpty, SectionDivider } from "../../../components/Insights";
+import { ActionList, BarList, ChartGrid, DashboardGrid, KpiStrip, Panel, PanelEmpty, SectionDivider } from "../../../components/Insights";
 import { NotAllowed } from "../../../components/NotAllowed";
 import { PageContent, PageToolbar } from "../../../components/PageToolbar";
 import { Pill } from "../../../components/Pill";
 import styles from "../../../components/RecordPage.module.css";
 import { marketingMetrics } from "../../../features/marketing/MarketingTiles";
-import { CHANNEL_LABELS, CONTENT_STATUS_LABELS, formatCount } from "../../../lib/marketing-view";
+import { distributionRows, totalOf } from "../../../lib/chart-data";
+import { CAMPAIGN_STATUS_LABELS, CHANNEL_LABELS, CONTENT_STATUS_LABELS, formatCount } from "../../../lib/marketing-view";
 import { canSeeMarketing } from "../../../lib/navigation";
 import { collectPages, dataOrForbidden, serverGet } from "../../../lib/server-api";
 import { requireAppSession } from "../../../lib/session";
@@ -96,6 +98,39 @@ export default async function MarketingOverviewPage() {
             </Panel>
           }
         />
+        <ChartGrid>
+          <Panel id="content-status-heading" title="Content by status" action={<Link href="/marketing/content">Content calendar</Link>}>
+            {totalOf(summary.contentByStatus) === 0 ? (
+              <PanelEmpty>No content yet.</PanelEmpty>
+            ) : (
+              <DonutChart
+                label="Content by status"
+                centerLabel="items"
+                total={`${formatCount(totalOf(summary.contentByStatus))} content items`}
+                rows={distributionRows(
+                  summary.contentByStatus.map((row) => ({ key: row.status, count: row.count })),
+                  (status) => CONTENT_STATUS_LABELS[status],
+                  { hideZero: true },
+                )}
+              />
+            )}
+          </Panel>
+          <Panel id="campaign-status-heading" title="Campaigns by status" action={<Link href="/marketing/campaigns">Campaigns</Link>}>
+            {totalOf(summary.campaignsByStatus) === 0 ? (
+              <PanelEmpty>No campaigns yet.</PanelEmpty>
+            ) : (
+              <BarList
+                label="Campaigns by status"
+                total={`${formatCount(totalOf(summary.campaignsByStatus))} campaigns`}
+                rows={distributionRows(
+                  summary.campaignsByStatus.map((row) => ({ key: row.status, count: row.count })),
+                  (status) => CAMPAIGN_STATUS_LABELS[status],
+                  { hideZero: true },
+                )}
+              />
+            )}
+          </Panel>
+        </ChartGrid>
         <SectionDivider id="channels-heading" title="Published in the last 30 days" />
         <Panel id="channels-table-heading" title="Outcomes by channel" flush>
           <DataTable

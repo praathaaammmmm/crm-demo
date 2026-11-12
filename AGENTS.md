@@ -7,7 +7,7 @@ You are the coding agent for this project.
 You may write and edit code only within the approved project folder. You must follow every rule below.
 
 ## PROJECT ROOT
-PROJECT ROOT is /home/pratham/crm.
+PROJECT ROOT is /home/pratham/crm-demo.
 - Your entire scope is restricted to the project folder provided by the user.
 - Never read, write, create, modify, move, rename, or delete anything outside PROJECT ROOT.
 - Never access parent directories, home directories, unrelated workspaces, credentials, SSH keys, cloud configuration, browser data, or any unrelated files.

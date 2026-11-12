@@ -22,7 +22,16 @@ export interface LoginResult {
   session: AuthSession;
 }
 
-export async function login(db: Database, ctx: Ctx, input: LoginRequest): Promise<LoginResult> {
+/**
+ * `countFailures: false` (public demo only) skips the failed-attempt counter and lockout so anyone can't
+ * lock the shared demo accounts; the per-IP login rate limit still applies.
+ */
+export async function login(
+  db: Database,
+  ctx: Ctx,
+  input: LoginRequest,
+  options: { countFailures: boolean } = { countFailures: true },
+): Promise<LoginResult> {
   const user = await repo.findUserForLogin(db, input.email);
   if (!user) {
     await verifyAgainstDummy(input.password);
@@ -34,6 +43,7 @@ export async function login(db: Database, ctx: Ctx, input: LoginRequest): Promis
   if (locked || user.status !== "active") throw invalidCredentials();
 
   if (!passwordMatches) {
+    if (!options.countFailures) throw invalidCredentials();
     await db.transaction(async (tx) => {
       const { justLocked } = await repo.recordFailedLogin(tx, user.id);
       if (justLocked) {

@@ -10,6 +10,7 @@
     "start": "node dist/src/server.js",
     "start:worker": "node dist/src/worker.js",
     "bootstrap": "node --env-file-if-exists=../../.env dist/src/bootstrap.js",
+    "demo:seed": "node dist/src/demo/seed.js",
     "test": "vitest run"
   },
   "dependencies": {

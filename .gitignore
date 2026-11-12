@@ -25,3 +25,4 @@ test-results/
 .vercel/
 tests/e2e/.auth/
 tests/e2e/.results/
+tests/demo/.results/

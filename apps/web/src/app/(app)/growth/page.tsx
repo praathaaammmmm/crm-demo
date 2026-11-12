@@ -1,5 +1,6 @@
 import { companyPageSchema } from "@crm/contracts/growth";
 import { leadPageSchema } from "@crm/contracts/growth-leads";
+import { proposalPageSchema } from "@crm/contracts/growth-proposals";
 import { growthOverviewSchema } from "@crm/contracts/growth-reports";
 import Link from "next/link";
 import { CapNotice } from "../../../components/CapNotice";
@@ -54,12 +55,13 @@ export default async function GrowthOverviewPage({ searchParams }: { searchParam
   if (requested.query.from !== undefined) query["from"] = requested.query.from;
   if (requested.query.to !== undefined) query["to"] = requested.query.to;
 
-  const [result, overdue, stale, companies, people] = await Promise.all([
+  const [result, overdue, stale, companies, people, proposalList] = await Promise.all([
     serverGet("/growth/reports/overview", growthOverviewSchema, query),
     serverGet("/growth/leads", leadPageSchema, { overdue: "true", limit: PREVIEW_ROWS }),
     serverGet("/growth/leads", leadPageSchema, { stale: "true", limit: PREVIEW_ROWS }),
     collectPages("/growth/companies", companyPageSchema),
     loadPeople(user),
+    collectPages("/growth/proposals", proposalPageSchema, {}, 2),
   ]);
   // The API's range rules (future dates, more than 366 days) come back as a safe validation message.
   if (!result.ok && result.failure.kind === "invalid") return <InvalidRange message={result.failure.message} />;
@@ -89,7 +91,7 @@ export default async function GrowthOverviewPage({ searchParams }: { searchParam
         {data.pipeline.openCount === 0 && data.byOwner.length === 0 ? (
           <p>No leads yet. Leads appear here as the CGO adds them.</p>
         ) : null}
-        <GrowthOverviewBody data={data} overdue={overdueLeads.items} stale={staleLeads.items} nameOf={people.nameOf} companyOf={companyOf} />
+        <GrowthOverviewBody data={data} proposals={proposalList.ok ? proposalList.data.items : null} overdue={overdueLeads.items} stale={staleLeads.items} nameOf={people.nameOf} companyOf={companyOf} />
       </PageContent>
     </>
   );

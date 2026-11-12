@@ -20,7 +20,7 @@ import { loggerOptions } from "./platform/logger.js";
 
 export interface AppDeps {
   db: Database;
-  env: Pick<ServerEnv, "APP_ORIGIN" | "NODE_ENV" | "LOG_LEVEL" | "ORG_TIMEZONE">;
+  env: Pick<ServerEnv, "APP_ORIGIN" | "NODE_ENV" | "LOG_LEVEL" | "ORG_TIMEZONE"> & Partial<Pick<ServerEnv, "DEMO_MODE">>;
 }
 
 export async function buildApp({ db, env }: AppDeps): Promise<FastifyInstance> {
@@ -32,13 +32,14 @@ export async function buildApp({ db, env }: AppDeps): Promise<FastifyInstance> {
 
   app.decorateRequest("auth", null);
   registerErrorHandler(app);
-  await registerSecurity(app, { appOrigin: env.APP_ORIGIN });
+  const demoMode = env.DEMO_MODE === true;
+  await registerSecurity(app, { appOrigin: env.APP_ORIGIN, demoMode });
 
   const cookieSecure = env.NODE_ENV !== "development";
   // Valid session and no pending password change. Role permissions are checked by each module's policy.
   const requireUser = requireSession((token) => resolveSession(db, token));
 
-  await app.register(identityRoutes({ db, cookieSecure }), { prefix: "/api/v1/auth" });
+  await app.register(identityRoutes({ db, cookieSecure, demoMode }), { prefix: "/api/v1/auth" });
   await app.register(organizationRoutes({ db, requireUser }), { prefix: "/api/v1/users" });
   await app.register(approvalRoutes({ db, requireUser, handlers: organizationApprovalHandlers }), {
     prefix: "/api/v1/approvals",

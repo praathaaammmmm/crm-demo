@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { DemoBanner } from "../features/demo/DemoBanner";
+import { isDemoMode } from "../lib/demo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,7 +12,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {isDemoMode() ? <DemoBanner /> : null}
+        {children}
+      </body>
     </html>
   );
 }

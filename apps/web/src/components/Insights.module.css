@@ -214,11 +214,16 @@
   font-size: var(--text-sm);
 }
 
+/* Labels wrap to at most two lines instead of truncating to one. */
 .barLabel {
   color: var(--color-text-muted);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .barTrack {
@@ -240,6 +245,19 @@
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.chartTotal {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+}
+
+.chartGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .legend {

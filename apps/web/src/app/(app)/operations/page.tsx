@@ -1,30 +1,36 @@
 import { incidentPageSchema, operationsSummarySchema, releasePageSchema, type Incident } from "@crm/contracts/operations";
 import Link from "next/link";
+import { DonutChart, StackedProgress } from "../../../components/Charts";
+import chartStyles from "../../../components/Charts.module.css";
 import { DataTable } from "../../../components/DataTable";
-import { ActionList, BarList, DashboardGrid, KpiStrip, Panel, PanelEmpty, StatGrid } from "../../../components/Insights";
+import { ActionList, BarList, ChartGrid, DashboardGrid, KpiStrip, Panel, PanelEmpty, StatGrid } from "../../../components/Insights";
 import { NotAllowed } from "../../../components/NotAllowed";
 import { PageContent, PageToolbar } from "../../../components/PageToolbar";
 import { Pill } from "../../../components/Pill";
 import { openIncidentCount, operationsMetrics } from "../../../features/operations/OperationsTiles";
 import { canApproveOperations, canSeeOperations } from "../../../lib/navigation";
-import { ENVIRONMENT_LABELS, INCIDENT_STATUS_LABELS, SEVERITY_LABELS } from "../../../lib/operations-view";
+import { distributionRows, plural, totalOf } from "../../../lib/chart-data";
+import { AUTOMATION_STATUS_LABELS, ENVIRONMENT_LABELS, INCIDENT_STATUS_LABELS, SEVERITY_LABELS } from "../../../lib/operations-view";
 import { loadPeople } from "../../../lib/people";
 import { collectPages, dataOrForbidden, serverGet } from "../../../lib/server-api";
 import { requireAppSession } from "../../../lib/session";
 
 const TITLE = "Engineering operations";
+/** Releases whose checklist still matters; deployed, failed, rejected and rolled-back releases are history. */
+const IN_PROGRESS_RELEASES = new Set(["draft", "awaiting_approval", "approved"]);
 
 /** VP operations dashboard; the CEO/CTO sees the same read-only overview plus the approvals waiting on them. */
 export default async function OperationsOverviewPage() {
   const { user } = await requireAppSession();
-  const [incidents, waiting, people, summaryResult] = canSeeOperations(user.role)
+  const [incidents, waiting, people, summaryResult, releaseList] = canSeeOperations(user.role)
     ? await Promise.all([
         collectPages("/operations/incidents", incidentPageSchema, { open: "true" }, 2),
         collectPages("/operations/releases", releasePageSchema, { status: "awaiting_approval" }, 2),
         loadPeople(user),
         serverGet("/operations/summary", operationsSummarySchema),
+        collectPages("/operations/releases", releasePageSchema, {}, 2),
       ])
-    : [null, null, null, null];
+    : [null, null, null, null, null];
   const open = incidents ? dataOrForbidden(incidents) : "forbidden";
   const pending = waiting ? dataOrForbidden(waiting) : "forbidden";
   if (open === "forbidden" || pending === "forbidden" || people === null) {
@@ -42,12 +48,44 @@ export default async function OperationsOverviewPage() {
 
   const summary = dataOrForbidden(summaryResult);
   const metrics = summary === "forbidden" ? [] : operationsMetrics(summary);
+  // Checklist completion for releases that are still in flight; finished releases are history.
+  const releases = releaseList.ok ? releaseList.data.items.filter((row) => IN_PROGRESS_RELEASES.has(row.status)) : [];
 
   return (
     <>
       <PageToolbar icon="gauge" title={TITLE} />
       <PageContent>
         {metrics.length > 0 ? <KpiStrip label="Operations summary" metrics={metrics.slice(0, 4)} /> : null}
+        {summary === "forbidden" ? null : (
+          <ChartGrid>
+            <Panel id="checklist-heading" title="Release checklist completion" action={<Link href="/operations/releases">All releases</Link>}>
+              {releases.length === 0 ? (
+                <PanelEmpty>No releases in progress.</PanelEmpty>
+              ) : (
+                <div className={chartStyles.stackList}>
+                  {releases.map((row) => (
+                    <StackedProgress key={row.id} label={`${row.name} (${row.versionLabel})`} done={row.checklistDone} total={row.checklistTotal} />
+                  ))}
+                </div>
+              )}
+            </Panel>
+            <Panel id="automation-status-heading" title="Automations by status" action={<Link href="/operations/automations">Automations</Link>}>
+              {totalOf(summary.automationsByStatus) === 0 ? (
+                <PanelEmpty>No automations yet.</PanelEmpty>
+              ) : (
+                <BarList
+                  label="Automations by status"
+                  total={`${plural(totalOf(summary.automationsByStatus), "automation", "automations")} · ${String(summary.unhealthyLiveAutomations)} live and unhealthy`}
+                  rows={distributionRows(
+                    summary.automationsByStatus.map((row) => ({ key: row.status, count: row.count })),
+                    (status) => AUTOMATION_STATUS_LABELS[status],
+                    { hideZero: true },
+                  )}
+                />
+              )}
+            </Panel>
+          </ChartGrid>
+        )}
         <DashboardGrid
           main={
             <>
@@ -56,9 +94,15 @@ export default async function OperationsOverviewPage() {
                   {openIncidentCount(summary) === 0 ? (
                     <PanelEmpty>No open incidents.</PanelEmpty>
                   ) : (
-                    <BarList
+                    <DonutChart
                       label="Open incidents by severity"
-                      rows={summary.openIncidentsBySeverity.map((row) => ({ key: row.severity, label: SEVERITY_LABELS[row.severity], value: row.count, text: String(row.count) }))}
+                      centerLabel="open"
+                      total={plural(openIncidentCount(summary), "open incident", "open incidents")}
+                      rows={distributionRows(
+                        summary.openIncidentsBySeverity.map((row) => ({ key: row.severity, count: row.count })),
+                        (severity) => SEVERITY_LABELS[severity],
+                        { hideZero: true },
+                      )}
                     />
                   )}
                 </Panel>

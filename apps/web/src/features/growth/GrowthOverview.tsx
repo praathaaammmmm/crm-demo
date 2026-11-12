@@ -1,7 +1,9 @@
-import { formatInr, stageLabel, type Lead } from "@crm/contracts/growth-leads";
+import { formatInr, LEAD_SOURCES, stageLabel, type Lead } from "@crm/contracts/growth-leads";
+import { PROPOSAL_STATUS_LABELS, PROPOSAL_STATUSES, type Proposal } from "@crm/contracts/growth-proposals";
 import type { GrowthOverview as Overview, OutcomeRow } from "@crm/contracts/growth-reports";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { DonutChart } from "../../components/Charts";
 import { DataTable, type Column } from "../../components/DataTable";
 import { EmptyState } from "../../components/EmptyState";
 import {
@@ -16,6 +18,7 @@ import {
   type ActionItem,
   type Metric,
 } from "../../components/Insights";
+import { countBy, distributionRows } from "../../lib/chart-data";
 import { formatPercent, LOST_LABELS, SOURCE_LABELS } from "../../lib/growth-report-view";
 import { formatDate } from "../tasks/DueDate";
 import styles from "./Growth.module.css";
@@ -98,6 +101,8 @@ type SourceRow = Overview["bySource"][number];
 /** The full CGO/CEO overview body. Read-only: actions live on the lead and proposal pages. */
 export function GrowthOverviewBody(props: {
   data: Overview;
+  /** Every proposal the caller can read, or null when the list could not be loaded. */
+  proposals: Proposal[] | null;
   overdue: Lead[];
   stale: Lead[];
   nameOf: (id: string) => string;
@@ -112,6 +117,11 @@ export function GrowthOverviewBody(props: {
     leads.length === 0 ? <PanelEmpty>{empty}</PanelEmpty> : <LeadTable leads={leads} nameOf={props.nameOf} companyOf={props.companyOf} />;
 
   const metrics = growthMetrics(data);
+  const sourceCount = (source: SourceRow["source"]) => {
+    const row = data.bySource.find((candidate) => candidate.source === source);
+    return row ? row.openCount + row.wonCount + row.lostCount : 0;
+  };
+  const sourceTotal = LEAD_SOURCES.reduce((sum, source) => sum + sourceCount(source), 0);
   const table = (id: string, title: string, children: ReactNode, action?: ReactNode) => (
     <Panel id={id} title={title} action={action} flush>
       {children}
@@ -158,6 +168,33 @@ export function GrowthOverviewBody(props: {
             />
           ) : (
             <PanelEmpty>Nothing in this range.</PanelEmpty>
+          )}
+        </Panel>
+        <Panel id="source-split-heading" title="Leads by source">
+          {sourceTotal === 0 ? (
+            <PanelEmpty>No leads yet.</PanelEmpty>
+          ) : (
+            <BarList
+              label="Leads by source"
+              total={`${String(sourceTotal)} leads (open, won and lost)`}
+              rows={distributionRows(
+                LEAD_SOURCES.map((source) => ({ key: source, count: sourceCount(source) })),
+                (source) => SOURCE_LABELS[source],
+                { hideZero: true },
+              )}
+            />
+          )}
+        </Panel>
+        <Panel id="proposal-status-heading" title="Proposals by status" action={<Link href="/growth/proposals">All proposals</Link>}>
+          {props.proposals === null || props.proposals.length === 0 ? (
+            <PanelEmpty>No proposals yet.</PanelEmpty>
+          ) : (
+            <DonutChart
+              label="Proposals by status"
+              centerLabel="proposals"
+              total={`${String(props.proposals.length)} proposals`}
+              rows={distributionRows(countBy(props.proposals, (row) => row.status, PROPOSAL_STATUSES), (status) => PROPOSAL_STATUS_LABELS[status], { hideZero: true })}
+            />
           )}
         </Panel>
         <Panel id="lost-heading" title="Lost reasons in range">

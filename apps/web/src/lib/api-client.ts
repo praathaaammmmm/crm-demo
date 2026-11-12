@@ -1,4 +1,5 @@
 import { errorResponseSchema } from "@crm/contracts/common";
+import { DEMO_READ_ONLY_MESSAGE } from "@crm/contracts/demo";
 
 /** Anything with a Zod-style safeParse: every response is checked against its contract. */
 export interface Parser<T> {
@@ -13,6 +14,7 @@ export type ApiFailure =
   | { kind: "conflict"; message: string }
   | { kind: "invalid"; message: string }
   | { kind: "rate_limited" }
+  | { kind: "demo_read_only" }
   | { kind: "unexpected" };
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; failure: ApiFailure };
@@ -54,9 +56,9 @@ export async function interpretResponse<T>(response: Response, parser: Parser<T>
     case 401:
       return fail({ kind: "unauthenticated" });
     case 403:
-      return code === "PASSWORD_CHANGE_REQUIRED"
-        ? fail({ kind: "password_change_required" })
-        : fail({ kind: "forbidden", message: message ?? "You do not have access to this." });
+      if (code === "PASSWORD_CHANGE_REQUIRED") return fail({ kind: "password_change_required" });
+      if (code === "DEMO_READ_ONLY") return fail({ kind: "demo_read_only" });
+      return fail({ kind: "forbidden", message: message ?? "You do not have access to this." });
     case 404:
       return fail({ kind: "not_found" });
     case 409:
@@ -83,6 +85,8 @@ export function failureMessage(failure: ApiFailure): string {
       return "This item no longer exists.";
     case "rate_limited":
       return "Too many attempts. Try again in a minute.";
+    case "demo_read_only":
+      return DEMO_READ_ONLY_MESSAGE;
     case "unexpected":
       return "Something went wrong. Try again.";
   }

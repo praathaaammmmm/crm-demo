@@ -1,0 +1,139 @@
+/* SVG/CSS chart primitives. Token colours only; no gradients or animation. */
+
+.total {
+  margin: 0 0 var(--space-3);
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+}
+
+.donutLayout {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.donut {
+  width: 112px;
+  height: 112px;
+  display: block;
+}
+
+.centerValue {
+  fill: var(--color-text);
+  font-size: 18px;
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.centerLabel {
+  fill: var(--color-text-subtle);
+  font-size: 9px;
+}
+
+.legend,
+.inlineLegend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.legendRow {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.legendLabel {
+  color: var(--color-text-muted);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.legendValue {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Stacked progress */
+.progress {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.progressHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+}
+
+.progressLabel {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.stack {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+}
+
+.stackDone,
+.stackRemaining {
+  display: block;
+  flex-basis: 0;
+  border-radius: 4px;
+}
+
+.stackDone {
+  background: var(--color-accent);
+}
+
+.stackRemaining {
+  background: var(--chart-remaining);
+}
+
+.inlineLegend {
+  grid-auto-flow: column;
+  justify-content: start;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.inlineLegend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.stackList {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (max-width: 767px) {
+  .donutLayout {
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .donut {
+    width: 96px;
+    height: 96px;
+  }
+}

@@ -1,4 +1,5 @@
 import type { ErrorCode } from "@crm/contracts/common";
+import { DEMO_READ_ONLY_MESSAGE } from "@crm/contracts/demo";
 
 /** An expected failure with a safe, client-facing message. */
 export class AppError extends Error {
@@ -19,6 +20,7 @@ export const errors = {
   notFound: () => new AppError("NOT_FOUND", 404, "Not found"),
   passwordChangeRequired: () =>
     new AppError("PASSWORD_CHANGE_REQUIRED", 403, "You must change your password before continuing"),
+  demoReadOnly: () => new AppError("DEMO_READ_ONLY", 403, DEMO_READ_ONLY_MESSAGE),
 };
 
 /**

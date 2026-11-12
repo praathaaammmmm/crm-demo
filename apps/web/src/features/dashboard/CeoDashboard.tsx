@@ -1,9 +1,12 @@
 import { approvalPageSchema } from "@crm/contracts/approvals";
 import { operationsSummarySchema } from "@crm/contracts/operations";
 import { directoryPageSchema } from "@crm/contracts/organization";
-import { taskSummarySchema } from "@crm/contracts/tasks";
+import { statusLabel, TASK_STATUSES, taskPageSchema, taskSummarySchema } from "@crm/contracts/tasks";
 import Link from "next/link";
-import { DashboardGrid, KpiStrip, Panel, SectionDivider, StatGrid, type Metric } from "../../components/Insights";
+import { ActionList, BarList, DashboardGrid, KpiStrip, Panel, PanelEmpty, SectionDivider, StatGrid, type ActionItem, type Metric } from "../../components/Insights";
+import { CapNotice } from "../../components/CapNotice";
+import { countBy, distributionRows } from "../../lib/chart-data";
+import { TASK_CAP_NOTICE } from "../../lib/task-view";
 import { NotAllowed } from "../../components/NotAllowed";
 import { GrowthSummary } from "../growth/GrowthSummary";
 import { MarketingTiles } from "../marketing/MarketingTiles";
@@ -15,23 +18,47 @@ import styles from "./Dashboard.module.css";
 import { ReviewQueuePreview } from "./ReviewQueuePreview";
 
 const MAX_PAGES = 5;
+/** The "needs attention" list stays short; the full lists are one click away. */
+const ATTENTION_ROWS = 6;
 
 /** "250+" rather than a wrong number when the count reaches the page limit. */
 const shown = (count: number, truncated: boolean) => (truncated ? `${String(count)}+` : String(count));
 
 /** CEO-only operational overview built from existing endpoints. */
 export async function CeoDashboard() {
-  const [users, pending, taskResult, opsResult] = await Promise.all([
+  const [users, pending, taskResult, opsResult, taskList] = await Promise.all([
     collectPages("/users", directoryPageSchema, {}, MAX_PAGES),
     collectPages("/approvals", approvalPageSchema, { status: "pending" }, MAX_PAGES),
     serverGet("/tasks/summary", taskSummarySchema),
     serverGet("/operations/summary", operationsSummarySchema),
+    collectPages("/tasks", taskPageSchema, {}, MAX_PAGES),
   ]);
   const directory = dataOrForbidden(users);
   const approvals = dataOrForbidden(pending);
   const tasks = dataOrForbidden(taskResult);
   if (directory === "forbidden" || approvals === "forbidden") return <NotAllowed />;
   const ops = dataOrForbidden(opsResult);
+  const allTasks = dataOrForbidden(taskList);
+
+  // Needs attention: overdue or blocked tasks, then pending approvals. Real records only, capped for the panel.
+  const attention: ActionItem[] = [
+    ...(allTasks === "forbidden" ? [] : allTasks.items)
+      .filter((task) => task.overdue || task.status === "blocked")
+      .map((task) => ({
+        key: task.id,
+        title: task.title,
+        href: `/tasks/${task.id}`,
+        meta: task.overdue ? `Overdue · due ${task.dueDate}` : statusLabel(task.status),
+        tone: task.overdue ? ("danger" as const) : ("warning" as const),
+      })),
+    ...approvals.items.map((approval) => ({
+      key: approval.id,
+      title: approval.type === "user.role_change" ? "Role change request" : "Deactivation request",
+      href: "/approvals?status=pending",
+      meta: "Awaiting your approval",
+      tone: "warning" as const,
+    })),
+  ].slice(0, ATTENTION_ROWS);
 
   const active = directory.items.filter((user) => user.status === "active").length;
   const deactivated = directory.items.length - active;
@@ -66,11 +93,29 @@ export async function CeoDashboard() {
         main={
           <>
             <GrowthSummary />
+            {allTasks === "forbidden" ? null : (
+              <Panel id="task-status-heading" title="Tasks by status" action={<Link href="/tasks">All tasks</Link>}>
+                <CapNotice show={allTasks.truncated} message={TASK_CAP_NOTICE.list} />
+                {allTasks.items.length === 0 ? (
+                  <PanelEmpty>No tasks yet.</PanelEmpty>
+                ) : (
+                  <BarList
+                    label="Tasks by status"
+                    total={`${String(allTasks.items.length)} tasks`}
+                    rows={distributionRows(countBy(allTasks.items, (task) => task.status, TASK_STATUSES), statusLabel, { hideZero: true })}
+                    legend="Bar length: number of tasks. Figures: count · share of all tasks."
+                  />
+                )}
+              </Panel>
+            )}
             <QualityOverview canManage previewRows={5} />
           </>
         }
         side={
           <>
+            <Panel id="attention-heading" title="Needs attention" flush>
+              <ActionList label="Needs attention" items={attention} empty="Nothing overdue, blocked or waiting for approval." />
+            </Panel>
             <Panel id="review-heading" title="Review queue" action={<Link href="/review">View all</Link>} flush>
               <ReviewQueuePreview />
             </Panel>

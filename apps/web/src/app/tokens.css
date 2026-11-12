@@ -88,6 +88,15 @@
   --color-success-soft: #1d3326;
   --color-info-soft: #1f2836;
 
+  /* Chart categories (donut segments): fixed order, validated against --color-surface for contrast and
+     colour-vision separation. Always paired with a text legend, never colour alone. */
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-remaining: #3d4048;
+
   /* Task statuses: fg (text), bg (pill), dot */
   --status-todo-fg: #c2c6ce;
   --status-todo-bg: #2a2c31;
