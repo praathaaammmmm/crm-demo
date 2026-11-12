@@ -5,15 +5,23 @@ import { Pill } from "../../components/Pill";
 import { roleLabel } from "../../lib/navigation";
 import { DeactivateUserDialog } from "./DeactivateUserDialog";
 import styles from "./Organization.module.css";
+import { ResetAccessDialog } from "./ResetAccessDialog";
 
 type DirectoryItem = DirectoryPage["items"][number];
 
 /** The email column appears only when the API included emails (CEO/CTO only). */
-export function UserTable({ users, viewer }: { users: DirectoryItem[]; viewer?: { id: string; canDeactivate: boolean } }) {
-  // Never the viewer's own row, never the CEO/CTO (the sole Super Admin), and only active users.
-  const deactivatable = (user: DirectoryItem) =>
-    viewer !== undefined && viewer.canDeactivate && user.id !== viewer.id && user.role !== "ceo_cto" && user.status === "active";
-  const showActions = users.some(deactivatable);
+export function UserTable({
+  users,
+  viewer,
+}: {
+  users: DirectoryItem[];
+  viewer?: { id: string; canDeactivate: boolean; canResetAccess: boolean };
+}) {
+  // Never the viewer's own row and never the CEO/CTO (the sole Super Admin). The API enforces the same rules.
+  const other = (user: DirectoryItem) => viewer !== undefined && user.id !== viewer.id && user.role !== "ceo_cto";
+  const deactivatable = (user: DirectoryItem) => other(user) && viewer?.canDeactivate === true && user.status === "active";
+  const resettable = (user: DirectoryItem) => other(user) && viewer?.canResetAccess === true;
+  const showActions = users.some((user) => deactivatable(user) || resettable(user));
   const showEmail = users.some((user) => user.email !== undefined);
   const columns: Column<DirectoryItem>[] = [
     {
@@ -60,9 +68,10 @@ export function UserTable({ users, viewer }: { users: DirectoryItem[]; viewer?: 
             key: "actions",
             header: "Actions",
             render: (user: DirectoryItem) =>
-              deactivatable(user) ? (
+              deactivatable(user) || resettable(user) ? (
                 <span className={styles.actionsCell}>
-                  <DeactivateUserDialog userId={user.id} userName={user.name} />
+                  {resettable(user) ? <ResetAccessDialog userId={user.id} userName={user.name} deactivated={user.status === "deactivated"} /> : null}
+                  {deactivatable(user) ? <DeactivateUserDialog userId={user.id} userName={user.name} /> : null}
                 </span>
               ) : null,
           },

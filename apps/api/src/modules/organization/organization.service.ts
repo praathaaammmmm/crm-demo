@@ -1,10 +1,10 @@
-import type { CreateUserRequest } from "@crm/contracts/organization";
+import type { CreateUserRequest, ResetAccessRequest } from "@crm/contracts/organization";
 import type { PaginationQuery } from "@crm/contracts/common";
 import type { Database } from "@crm/database/client";
 import type { AuthSession, Ctx, Executor } from "../../platform/context.js";
 import { errors, isUniqueViolation } from "../../platform/errors.js";
 import { recordAudit } from "../audit/index.js";
-import { hashPassword, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "../identity/index.js";
+import { hashPassword, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, revokeUserSessions } from "../identity/index.js";
 import { ORGANIZATION_AUDIT, userSnapshot } from "./organization.audit.js";
 import * as policy from "./organization.policy.js";
 import * as repo from "./organization.repository.js";
@@ -96,6 +96,41 @@ export async function createUser(db: Database, ctx: Ctx, actor: User, input: Cre
     if (isUniqueViolation(error, "users_email_unique")) throw errors.conflict("A user with this email already exists");
     throw error;
   }
+}
+
+/**
+ * CEO only, never on the CEO/CTO or the caller's own account. In one transaction: replaces the password with a
+ * temporary one the user must change, clears any lockout, restores a deactivated user, ends every session (with
+ * attendance session_end) and records an audit event without the password, hash or email. Nothing is deleted.
+ */
+export async function resetAccess(
+  db: Database,
+  ctx: Ctx,
+  actor: User,
+  userId: string,
+  input: ResetAccessRequest,
+): Promise<UserRecord> {
+  policy.assertCanResetAccess(actor);
+  if (userId === actor.id) throw errors.forbidden("You cannot reset your own access");
+  const passwordHash = await hashPassword(input.temporaryPassword);
+
+  return db.transaction(async (tx) => {
+    const user = await repo.lockUser(tx, userId);
+    if (!user) throw errors.notFound();
+    if (user.isSuperAdmin) throw errors.forbidden("The CEO/CTO account cannot be reset here");
+    await repo.resetAccess(tx, user.id, passwordHash);
+    const sessionsRevoked = await revokeUserSessions(tx, user.id);
+    await recordAudit(tx, ctx, {
+      action: ORGANIZATION_AUDIT.accessReset,
+      entityType: "user",
+      entityId: user.id,
+      before: userSnapshot(user),
+      after: { ...userSnapshot({ role: user.role, status: "active" }), mustChangePassword: true, sessionsRevoked },
+    });
+    const updated = await repo.findUserById(tx, user.id);
+    if (!updated) throw new Error("User not found after reset");
+    return updated;
+  });
 }
 
 export type AssigneeCheck = "ok" | "not_found" | "inactive" | "super_admin";

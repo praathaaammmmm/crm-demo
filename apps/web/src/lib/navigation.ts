@@ -40,6 +40,7 @@ export interface NavSection {
 export const canDecideApprovals = (role: Role): boolean => can({ role }, "approvals:decide");
 export const canReadDirectory = (role: Role): boolean => can({ role }, "users:read_directory");
 export const canCreateUsers = (role: Role): boolean => can({ role }, "users:create");
+export const canResetAccess = (role: Role): boolean => can({ role }, "users:reset_access");
 /** Deactivation runs through the approval workflow; only a role that can both request and decide it acts directly. */
 export const canDeactivateUsers = (role: Role): boolean => can({ role }, "approvals:request_deactivation") && can({ role }, "approvals:decide");
 export const canSeeApprovals = (role: Role): boolean =>

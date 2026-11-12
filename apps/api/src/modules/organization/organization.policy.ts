@@ -8,6 +8,10 @@ export function assertCanCreateUser(user: User): void {
   if (!can(user, "users:create")) throw errors.forbidden();
 }
 
+export function assertCanResetAccess(user: User): void {
+  if (!can(user, "users:reset_access")) throw errors.forbidden();
+}
+
 export function assertCanReadDirectory(user: User): void {
   if (!can(user, "users:read_directory")) throw errors.forbidden();
 }

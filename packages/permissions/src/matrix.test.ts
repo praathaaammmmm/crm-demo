@@ -26,6 +26,7 @@ const EXPECTED: Record<Role, Permission[]> = {
     "users:create",
     "users:read_directory",
     "users:read_email",
+    "users:reset_access",
     "approvals:request_role_change",
     "approvals:request_deactivation",
     "approvals:decide",

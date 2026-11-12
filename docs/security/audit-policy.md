@@ -52,6 +52,7 @@ Never recorded: passwords, password hashes, session tokens or hashes, email addr
 | `user.created` | `user` | Super Admin creates a user |
 | `user.role_changed` | `user` | Approved role change executes (includes `sessionsRevoked` count) |
 | `user.deactivated` | `user` | Approved deactivation executes |
+| `user.access_reset` | `user` | CEO/CTO resets a user's access: new temporary password, sessions ended, deactivated user restored (records role, status, `mustChangePassword` and `sessionsRevoked` only) |
 | `user.password_changed` | `user` | A user changes their password |
 | `user.account_locked` | `anonymous` | Fifth failed login locks the account |
 | `approval.requested` | `user` | Approval request created |

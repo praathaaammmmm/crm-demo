@@ -80,6 +80,7 @@ describe("can", () => {
       for (const permission of [
         "approvals:decide",
         "users:create",
+        "users:reset_access",
         "projects:create",
         "tasks:create",
         "tasks:manage",

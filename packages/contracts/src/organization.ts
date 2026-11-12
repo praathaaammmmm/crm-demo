@@ -13,6 +13,17 @@ export const createUserRequestSchema = z.strictObject({
 });
 export type CreateUserRequest = z.infer<typeof createUserRequestSchema>;
 
+export const userIdParamsSchema = z.strictObject({ id: z.uuid() });
+
+/**
+ * CEO only. Sets a new temporary password (the user must change it at next sign-in), ends every session,
+ * clears any lockout and, if the user was deactivated, restores access. Nothing is deleted.
+ */
+export const resetAccessRequestSchema = z.strictObject({
+  temporaryPassword: z.string().min(12).max(128),
+});
+export type ResetAccessRequest = z.infer<typeof resetAccessRequestSchema>;
+
 /** Explicit allowlist: never add password_hash or any credential field. */
 export const userResponseSchema = z.strictObject({
   user: z.strictObject({

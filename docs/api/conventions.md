@@ -79,6 +79,7 @@ GET /api/v1/audit-events?limit=50&cursor=<opaque>
 | POST | `/api/v1/auth/password` | authenticated |
 | GET | `/api/v1/users` | `users:read_directory` (email needs `users:read_email`) |
 | POST | `/api/v1/users` | `users:create` |
+| POST | `/api/v1/users/:id/reset-access` | `users:reset_access` (never the CEO/CTO or the caller) |
 | POST | `/api/v1/approvals` | `approvals:request_role_change` or `approvals:request_deactivation`, by type |
 | GET | `/api/v1/approvals` | requesters see their own; `approvals:read_all` sees all |
 | POST | `/api/v1/approvals/:id/approve` | `approvals:decide` |

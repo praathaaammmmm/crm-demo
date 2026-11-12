@@ -3,6 +3,7 @@ export const ORGANIZATION_AUDIT = {
   userCreated: "user.created",
   roleChanged: "user.role_changed",
   deactivated: "user.deactivated",
+  accessReset: "user.access_reset",
 } as const;
 
 /** Allowlisted user fields for audit before/after snapshots (docs/security/audit-policy.md). */

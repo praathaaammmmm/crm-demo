@@ -89,3 +89,22 @@ export async function setDeactivated(tx: Tx, id: string): Promise<void> {
     .set({ status: "deactivated", deactivatedAt: sql`now()`, updatedAt: sql`now()` })
     .where(eq(users.id, id));
 }
+
+/**
+ * Reset access: new password hash, must-change flag, lockout cleared and, if deactivated, restored to active.
+ * Every column is in crm_app's UPDATE grant; deactivated_at is cleared together with the status (users_deactivated_at).
+ */
+export async function resetAccess(tx: Tx, id: string, passwordHash: string): Promise<void> {
+  await tx
+    .update(users)
+    .set({
+      passwordHash,
+      mustChangePassword: true,
+      status: "active",
+      deactivatedAt: null,
+      failedLoginCount: 0,
+      lockedUntil: null,
+      updatedAt: sql`now()`,
+    })
+    .where(eq(users.id, id));
+}

@@ -6,7 +6,7 @@ import { PageContent, PageToolbar } from "../../../components/PageToolbar";
 import { CreateUserDialog } from "../../../features/organization/CreateUserDialog";
 import styles from "../../../features/organization/Organization.module.css";
 import { UserTable } from "../../../features/organization/UserTable";
-import { canCreateUsers, canDeactivateUsers, canReadDirectory } from "../../../lib/navigation";
+import { canCreateUsers, canDeactivateUsers, canReadDirectory, canResetAccess } from "../../../lib/navigation";
 import { isUuid, readParam, type SearchParams } from "../../../lib/search-params";
 import { dataOrForbidden, serverGet } from "../../../lib/server-api";
 import { requireAppSession } from "../../../lib/session";
@@ -50,7 +50,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
           <NotAllowed />
         ) : (
           <>
-            {page.items.length === 0 ? <EmptyState title="No users yet" /> : <UserTable users={page.items} viewer={{ id: user.id, canDeactivate: canDeactivateUsers(user.role) }} />}
+            {page.items.length === 0 ? <EmptyState title="No users yet" /> : <UserTable users={page.items} viewer={{ id: user.id, canDeactivate: canDeactivateUsers(user.role), canResetAccess: canResetAccess(user.role) }} />}
             {validCursor === undefined && page.nextCursor === null ? null : (
               <nav className={styles.pager} aria-label="Users pages">
                 <span>{page.items.length} on this page</span>
