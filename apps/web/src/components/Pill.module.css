@@ -26,6 +26,30 @@ a.pill:hover {
   color: var(--color-accent);
 }
 
+.toneAccent {
+  background: var(--color-accent-soft);
+  border-color: transparent;
+  color: var(--color-accent);
+}
+
+.toneSuccess {
+  background: var(--color-success-soft);
+  border-color: transparent;
+  color: var(--color-success);
+}
+
+.toneWarning {
+  background: var(--color-warning-soft);
+  border-color: transparent;
+  color: var(--color-warning);
+}
+
+.toneDanger {
+  background: var(--color-danger-soft);
+  border-color: transparent;
+  color: var(--color-danger);
+}
+
 .dot {
   width: 6px;
   height: 6px;

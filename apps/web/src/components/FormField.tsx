@@ -13,3 +13,13 @@ export function FormField({ id, label, hint, children }: { id: string; label: st
     </div>
   );
 }
+
+/** Groups related fields under a quiet section label (a real fieldset and legend). */
+export function FormSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <fieldset className={styles.section}>
+      <legend className={styles.sectionTitle}>{title}</legend>
+      {children}
+    </fieldset>
+  );
+}

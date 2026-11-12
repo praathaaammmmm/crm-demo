@@ -11,12 +11,18 @@ export function PageToolbar({
   icon,
   title,
   breadcrumbs = [],
+  count,
+  countLabel,
   controls,
   primaryAction,
 }: {
   icon: IconName;
   title: string;
   breadcrumbs?: { href: string; label: string }[];
+  /** Optional record count shown after the title. */
+  count?: number | undefined;
+  /** Accessible text for the count, e.g. "12 users". */
+  countLabel?: string | undefined;
   controls?: ReactNode;
   primaryAction?: ReactNode;
 }) {
@@ -35,6 +41,12 @@ export function PageToolbar({
           </nav>
         ) : null}
         <h1 className={styles.title}>{title}</h1>
+        {count === undefined ? null : (
+          <span className={styles.count}>
+            <span aria-hidden={countLabel === undefined ? undefined : true}>{count}</span>
+            {countLabel === undefined ? null : <span className="visually-hidden">{countLabel}</span>}
+          </span>
+        )}
       </div>
       {controls || primaryAction ? (
         <div className={styles.right}>

@@ -27,7 +27,12 @@
   /* Radius */
   --radius-sm: 6px;
   --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-pill: 999px;
+
+  /* Dense record lists */
+  --row-height: 36px;
+  --pill-height-sm: 20px;
 
   /* Type */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -60,6 +65,11 @@
   --color-text-muted: #5e6370;
   --color-text-subtle: #8a8f99;
   --color-backdrop: rgb(20 22 28 / 0.32);
+  /* Tonal layers: sunken (wells, table headers), raised (drawers, popovers), subtle row dividers */
+  --color-surface-sunken: #f6f6f4;
+  --color-surface-raised: #ffffff;
+  --color-border-subtle: #eceef1;
+  --color-section-label: #8a8f99;
 
   /* Accent (one restrained indigo-blue) */
   --color-accent: #4a5bd4;
@@ -108,6 +118,7 @@
   --shadow-xs: 0 1px 2px rgb(20 22 28 / 0.06);
   --shadow-popover: 0 4px 16px rgb(20 22 28 / 0.1);
   --shadow-dialog: 0 12px 40px rgb(20 22 28 / 0.18);
+  --shadow-drawer: -8px 0 32px rgb(20 22 28 / 0.12);
 
   /* Motion */
   --duration-fast: 120ms;
@@ -132,6 +143,10 @@
     --color-text-muted: #a5a9b3;
     --color-text-subtle: #7d828c;
     --color-backdrop: rgb(0 0 0 / 0.5);
+    --color-surface-sunken: #17181c;
+    --color-surface-raised: #1f2025;
+    --color-border-subtle: #26282d;
+    --color-section-label: #8b909a;
 
     --color-accent: #8495f0;
     --color-accent-hover: #97a6f4;
@@ -163,6 +178,7 @@
     --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
     --shadow-popover: 0 4px 16px rgb(0 0 0 / 0.4);
     --shadow-dialog: 0 12px 40px rgb(0 0 0 / 0.5);
+    --shadow-drawer: -12px 0 40px rgb(0 0 0 / 0.45);
   }
 }
 

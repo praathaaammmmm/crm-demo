@@ -4,6 +4,7 @@ import { EmptyState } from "../../../components/EmptyState";
 import { NotAllowed } from "../../../components/NotAllowed";
 import { PageContent, PageToolbar } from "../../../components/PageToolbar";
 import { CreateUserDialog } from "../../../features/organization/CreateUserDialog";
+import styles from "../../../features/organization/Organization.module.css";
 import { UserTable } from "../../../features/organization/UserTable";
 import { canCreateUsers, canReadDirectory } from "../../../lib/navigation";
 import { isUuid, readParam, type SearchParams } from "../../../lib/search-params";
@@ -29,10 +30,14 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
     await serverGet("/users", directoryPageSchema, validCursor === undefined ? {} : { cursor: validCursor }),
   );
 
+  // A count is shown only when this page holds the whole directory; otherwise it would mislead.
+  const total = page !== "forbidden" && validCursor === undefined && page.nextCursor === null ? page.items.length : undefined;
   const toolbar = (
     <PageToolbar
       icon="users"
       title="Users"
+      count={total}
+      countLabel={total === undefined ? undefined : `${String(total)} ${total === 1 ? "user" : "users"}`}
       primaryAction={page !== "forbidden" && canCreateUsers(user.role) ? <CreateUserDialog /> : undefined}
     />
   );
@@ -46,11 +51,15 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
         ) : (
           <>
             {page.items.length === 0 ? <EmptyState title="No users yet" /> : <UserTable users={page.items} />}
-            <p style={{ marginTop: "var(--space-3)", fontSize: "var(--text-sm)" }}>
-              {validCursor === undefined ? null : <Link href="/users">First page</Link>}
-              {validCursor !== undefined && page.nextCursor !== null ? " · " : null}
-              {page.nextCursor === null ? null : <Link href={`/users?cursor=${page.nextCursor}`}>Next page</Link>}
-            </p>
+            {validCursor === undefined && page.nextCursor === null ? null : (
+              <nav className={styles.pager} aria-label="Users pages">
+                <span>{page.items.length} on this page</span>
+                <span className={styles.pagerLinks}>
+                  {validCursor === undefined ? null : <Link href="/users">First page</Link>}
+                  {page.nextCursor === null ? null : <Link href={`/users?cursor=${page.nextCursor}`}>Next page</Link>}
+                </span>
+              </nav>
+            )}
           </>
         )}
       </PageContent>

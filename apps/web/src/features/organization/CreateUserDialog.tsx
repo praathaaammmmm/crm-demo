@@ -7,7 +7,7 @@ import { Button } from "../../components/Button";
 import { DialogFooter } from "../../components/Dialog";
 import { Drawer } from "../../components/Drawer";
 import { ErrorNotice } from "../../components/ErrorNotice";
-import { FormField } from "../../components/FormField";
+import { FormField, FormSection } from "../../components/FormField";
 import { Icon } from "../../components/Icon";
 import { apiRequest } from "../../lib/api-client";
 import { roleLabel } from "../../lib/navigation";
@@ -63,49 +63,61 @@ export function CreateUserDialog() {
         <Icon name="plus" />
         New user
       </Button>
-      <Drawer open={open} onClose={close} title="New user">
-        <form onSubmit={onSubmit} noValidate>
+      <Drawer
+        open={open}
+        onClose={close}
+        title="New user"
+        description="Reports directly to the CEO/CTO."
+        layout="editor"
+      >
+        <form onSubmit={onSubmit} noValidate aria-busy={busy}>
           {error ? (
             <div className={styles.formError}>
               <ErrorNotice message={error} />
             </div>
           ) : null}
-          <FormField id="user-name" label="Name">
-            <input id="user-name" name="name" required maxLength={200} autoComplete="off" />
-          </FormField>
-          <FormField id="user-email" label="Email">
-            <input id="user-email" name="email" type="email" required maxLength={254} autoComplete="off" />
-          </FormField>
-          <FormField id="user-role" label="Role">
-            <select id="user-role" name="role" required defaultValue="">
-              <option value="" disabled>
-                Choose a role
-              </option>
-              {ASSIGNABLE_ROLES.map((role) => (
-                <option key={role} value={role}>
-                  {roleLabel(role)}
+          <FormSection title="Profile">
+            <FormField id="user-name" label="Name">
+              <input id="user-name" name="name" required maxLength={200} autoComplete="off" />
+            </FormField>
+            <FormField id="user-email" label="Email">
+              <input id="user-email" name="email" type="email" required maxLength={254} autoComplete="off" />
+            </FormField>
+          </FormSection>
+          <FormSection title="Access">
+            <FormField id="user-role" label="Role" hint="CEO/CTO cannot be assigned.">
+              <select id="user-role" name="role" required defaultValue="">
+                <option value="" disabled>
+                  Choose a role
                 </option>
-              ))}
-            </select>
-          </FormField>
-          <FormField
-            id="user-password"
-            label="Temporary password"
-            hint="12 to 128 characters. They must change it at first sign-in."
-          >
-            <input
-              id="user-password"
-              name="initialPassword"
-              type="password"
-              required
-              minLength={12}
-              maxLength={128}
-              autoComplete="new-password"
-            />
-          </FormField>
-          <DialogFooter>
-            <Button onClick={close}>Cancel</Button>
-            <Button type="submit" variant="primary" busy={busy}>
+                {ASSIGNABLE_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {roleLabel(role)}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField id="user-password" label="Temporary password" hint="12 to 128 characters.">
+              <input
+                id="user-password"
+                name="initialPassword"
+                type="password"
+                required
+                minLength={12}
+                maxLength={128}
+                autoComplete="new-password"
+              />
+            </FormField>
+            <p className={styles.notice}>
+              <Icon name="shield" />
+              <span>Share the temporary password privately. They must set a new password at first sign-in.</span>
+            </p>
+          </FormSection>
+          <DialogFooter sticky>
+            <Button onClick={close} disabled={busy}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" busy={busy} busyLabel="Creating…">
               Create user
             </Button>
           </DialogFooter>

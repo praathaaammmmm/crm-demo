@@ -46,3 +46,30 @@
 .table tr:last-child td {
   border-bottom: none;
 }
+
+/* Compact record list (opt-in). */
+.compact {
+  border-radius: var(--radius-lg);
+  border-color: var(--color-border);
+}
+
+.compact .table th {
+  height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: var(--color-surface-sunken);
+  color: var(--color-section-label);
+  border-bottom-color: var(--color-border);
+}
+
+.compact .table td {
+  height: var(--row-height);
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom-color: var(--color-border-subtle);
+}
+
+.compact .table th:first-child,
+.compact .table td:first-child {
+  padding-left: var(--space-4);
+}
