@@ -324,3 +324,20 @@
   gap: var(--space-1);
   color: var(--color-text-muted);
 }
+
+/* Overview panels (Insights primitives). */
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.chartGap {
+  margin-top: var(--space-3);
+}

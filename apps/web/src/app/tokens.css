@@ -1,6 +1,7 @@
 /*
  * Design tokens. Every colour, size, radius, shadow and timing used by the UI is defined here,
- * so the whole look can be restyled in this one file.
+ * so the whole look can be restyled in this one file. The app is dark-only: there is no light palette
+ * and no prefers-color-scheme override.
  * Breakpoints (media queries cannot use variables): desktop >= 1024px, tablet 768-1023px, mobile < 768px.
  */
 :root {
@@ -55,56 +56,56 @@
   --focus-width: 2px;
 
   /* Neutrals */
-  --color-canvas: #faf9f7;
-  --color-surface: #ffffff;
-  --color-surface-hover: #f4f4f2;
-  --color-selected: #efefec;
-  --color-border: #e3e5e8;
-  --color-border-strong: #cdd1d6;
-  --color-text: #1c1d21;
-  --color-text-muted: #5e6370;
-  --color-text-subtle: #8a8f99;
-  --color-backdrop: rgb(20 22 28 / 0.32);
+  --color-canvas: #141518;
+  --color-surface: #1b1c20;
+  --color-surface-hover: #23252a;
+  --color-selected: #2a2c32;
+  --color-border: #2e3036;
+  --color-border-strong: #3d4048;
+  --color-text: #ececef;
+  --color-text-muted: #a5a9b3;
+  --color-text-subtle: #7d828c;
+  --color-backdrop: rgb(0 0 0 / 0.5);
   /* Tonal layers: sunken (wells, table headers), raised (drawers, popovers), subtle row dividers */
-  --color-surface-sunken: #f6f6f4;
-  --color-surface-raised: #ffffff;
-  --color-border-subtle: #eceef1;
-  --color-section-label: #8a8f99;
+  --color-surface-sunken: #17181c;
+  --color-surface-raised: #1f2025;
+  --color-border-subtle: #26282d;
+  --color-section-label: #8b909a;
 
   /* Accent (one restrained indigo-blue) */
-  --color-accent: #4a5bd4;
-  --color-accent-hover: #3d4ec2;
-  --color-accent-soft: #eef0fc;
-  --color-accent-text: #ffffff;
-  --color-focus-ring: #6b7bea;
+  --color-accent: #8495f0;
+  --color-accent-hover: #97a6f4;
+  --color-accent-soft: #252a45;
+  --color-accent-text: #101225;
+  --color-focus-ring: #9aa8f5;
 
   /* Semantic (muted) */
-  --color-danger: #b4322b;
-  --color-danger-soft: #fbeceb;
-  --color-warning: #9a6512;
-  --color-warning-soft: #fbf3e4;
-  --color-success: #2f7a4f;
-  --color-success-soft: #e9f5ee;
-  --color-info-soft: #eef3fa;
+  --color-danger: #ee8a80;
+  --color-danger-soft: #3a2220;
+  --color-warning: #e2b46a;
+  --color-warning-soft: #352a19;
+  --color-success: #7fcf9d;
+  --color-success-soft: #1d3326;
+  --color-info-soft: #1f2836;
 
   /* Task statuses: fg (text), bg (pill), dot */
-  --status-todo-fg: #4c5361;
-  --status-todo-bg: #f0f1f3;
+  --status-todo-fg: #c2c6ce;
+  --status-todo-bg: #2a2c31;
   --status-todo-dot: #9aa0aa;
-  --status-in-progress-fg: #2f4fa8;
-  --status-in-progress-bg: #edf1fb;
+  --status-in-progress-fg: #a9bcf3;
+  --status-in-progress-bg: #232b40;
   --status-in-progress-dot: #5b7bd6;
-  --status-blocked-fg: #a33a2f;
-  --status-blocked-bg: #fbeeec;
+  --status-blocked-fg: #f0a199;
+  --status-blocked-bg: #3a2422;
   --status-blocked-dot: #d26a5e;
-  --status-in-review-fg: #6a4aa8;
-  --status-in-review-bg: #f3effa;
+  --status-in-review-fg: #c7b4ef;
+  --status-in-review-bg: #2d2640;
   --status-in-review-dot: #9a7fd0;
-  --status-changes-requested-fg: #8e5a14;
-  --status-changes-requested-bg: #fbf3e5;
+  --status-changes-requested-fg: #e9c486;
+  --status-changes-requested-bg: #362c1b;
   --status-changes-requested-dot: #d1a04e;
-  --status-completed-fg: #2f7a4f;
-  --status-completed-bg: #eaf5ee;
+  --status-completed-fg: #93d8ad;
+  --status-completed-bg: #1f3328;
   --status-completed-dot: #5fae80;
 
   /* Priorities (marker colour) */
@@ -115,10 +116,10 @@
 
   /* Depth: almost flat */
   --shadow-none: none;
-  --shadow-xs: 0 1px 2px rgb(20 22 28 / 0.06);
-  --shadow-popover: 0 4px 16px rgb(20 22 28 / 0.1);
-  --shadow-dialog: 0 12px 40px rgb(20 22 28 / 0.18);
-  --shadow-drawer: -8px 0 32px rgb(20 22 28 / 0.12);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-popover: 0 4px 16px rgb(0 0 0 / 0.4);
+  --shadow-dialog: 0 12px 40px rgb(0 0 0 / 0.5);
+  --shadow-drawer: -12px 0 40px rgb(0 0 0 / 0.45);
 
   /* Motion */
   --duration-fast: 120ms;
@@ -129,57 +130,6 @@
   --z-sidebar: 20;
   --z-topbar: 30;
   --z-overlay: 40;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-canvas: #141518;
-    --color-surface: #1b1c20;
-    --color-surface-hover: #23252a;
-    --color-selected: #2a2c32;
-    --color-border: #2e3036;
-    --color-border-strong: #3d4048;
-    --color-text: #ececef;
-    --color-text-muted: #a5a9b3;
-    --color-text-subtle: #7d828c;
-    --color-backdrop: rgb(0 0 0 / 0.5);
-    --color-surface-sunken: #17181c;
-    --color-surface-raised: #1f2025;
-    --color-border-subtle: #26282d;
-    --color-section-label: #8b909a;
-
-    --color-accent: #8495f0;
-    --color-accent-hover: #97a6f4;
-    --color-accent-soft: #252a45;
-    --color-accent-text: #101225;
-    --color-focus-ring: #9aa8f5;
-
-    --color-danger: #ee8a80;
-    --color-danger-soft: #3a2220;
-    --color-warning: #e2b46a;
-    --color-warning-soft: #352a19;
-    --color-success: #7fcf9d;
-    --color-success-soft: #1d3326;
-    --color-info-soft: #1f2836;
-
-    --status-todo-fg: #c2c6ce;
-    --status-todo-bg: #2a2c31;
-    --status-in-progress-fg: #a9bcf3;
-    --status-in-progress-bg: #232b40;
-    --status-blocked-fg: #f0a199;
-    --status-blocked-bg: #3a2422;
-    --status-in-review-fg: #c7b4ef;
-    --status-in-review-bg: #2d2640;
-    --status-changes-requested-fg: #e9c486;
-    --status-changes-requested-bg: #362c1b;
-    --status-completed-fg: #93d8ad;
-    --status-completed-bg: #1f3328;
-
-    --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-popover: 0 4px 16px rgb(0 0 0 / 0.4);
-    --shadow-dialog: 0 12px 40px rgb(0 0 0 / 0.5);
-    --shadow-drawer: -12px 0 40px rgb(0 0 0 / 0.45);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

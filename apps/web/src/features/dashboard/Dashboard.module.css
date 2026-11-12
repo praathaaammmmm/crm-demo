@@ -127,3 +127,9 @@
   border-color: var(--color-border-strong);
   text-decoration: none;
 }
+
+/* Vertical stack of Insights panels. */
+.stack {
+  display: grid;
+  gap: var(--space-4);
+}

@@ -9,6 +9,7 @@ import { OpenDefectsTile } from "../../features/quality/OpenDefectsTile";
 import { QualityOverview } from "../../features/quality/QualityOverview";
 import { canDecideApprovals, canManageQuality, canSeeDefects, canSeeGrowth, canSeeMarketing, canSeeMeetings, canSeeOperations, canSeeQuality, navItemsFor } from "../../lib/navigation";
 import { requireAppSession } from "../../lib/session";
+import styles from "../../features/dashboard/Dashboard.module.css";
 
 export default async function HomePage() {
   const { user } = await requireAppSession();
@@ -20,37 +21,29 @@ export default async function HomePage() {
         {isCeo ? (
           <CeoDashboard />
         ) : (
-          <>
+          <div className={styles.stack}>
             <WelcomePanel name={user.name} items={navItemsFor(user.role)} />
             {canSeeGrowth(user.role) ? (
-              <div style={{ marginTop: "var(--space-6)" }}>
-                <GrowthSummary />
-              </div>
+              <GrowthSummary />
             ) : null}
             {canSeeMarketing(user.role) ? (
-              <div style={{ marginTop: "var(--space-6)" }}>
-                <MarketingTiles />
-              </div>
+              <MarketingTiles />
             ) : null}
             {canSeeOperations(user.role) ? (
-              <div style={{ marginTop: "var(--space-6)" }}>
-                <OperationsTiles />
-              </div>
+              <OperationsTiles />
             ) : null}
             {canSeeMeetings(user.role) ? (
-              <div style={{ marginTop: "var(--space-6)" }}>
-                <MeetingsSection summary={false} />
-              </div>
+              <MeetingsSection summary={false} />
             ) : null}
             {/* VP Engineering & Quality sees quality tiles; other roles with tasks see their open defects. */}
-            <div style={{ marginTop: "var(--space-6)" }}>
+            <div className={styles.stack}>
               {canSeeQuality(user.role) ? (
                 <QualityOverview canManage={canManageQuality(user.role)} previewRows={5} />
               ) : canSeeDefects(user.role) ? (
                 <OpenDefectsTile />
               ) : null}
             </div>
-          </>
+          </div>
         )}
       </PageContent>
     </>

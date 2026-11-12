@@ -9,9 +9,19 @@ export default async function LoginPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.card}>
-        <h1>Sign in</h1>
-        <LoginForm />
+      <div className={styles.loginColumn}>
+        <div className={styles.identity}>
+          <span className={styles.mark} aria-hidden="true">
+            C
+          </span>
+          <span className={styles.identityName}>CRM workspace</span>
+        </div>
+        <div className={[styles.card, styles.loginCard].join(" ")}>
+          <h1>Sign in</h1>
+          <p className={styles.intro}>Internal workspace for the team.</p>
+          <LoginForm />
+        </div>
+        <p className={styles.help}>Ask the CEO/CTO for access.</p>
       </div>
     </main>
   );

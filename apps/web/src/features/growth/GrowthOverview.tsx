@@ -4,90 +4,83 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { DataTable, type Column } from "../../components/DataTable";
 import { EmptyState } from "../../components/EmptyState";
-import { Icon, type IconName } from "../../components/Icon";
-import { barPercent, formatPercent, LOST_LABELS, SOURCE_LABELS } from "../../lib/growth-report-view";
-import dashboard from "../dashboard/Dashboard.module.css";
+import {
+  ActionList,
+  BarList,
+  DashboardGrid,
+  KpiStrip,
+  Panel,
+  PanelEmpty,
+  SectionDivider,
+  StatGrid,
+  type ActionItem,
+  type Metric,
+} from "../../components/Insights";
+import { formatPercent, LOST_LABELS, SOURCE_LABELS } from "../../lib/growth-report-view";
+import { formatDate } from "../tasks/DueDate";
 import styles from "./Growth.module.css";
 import { LeadTable } from "./LeadTable";
 
-interface Tile {
-  label: string;
-  value: string;
-  detail?: string;
-  href: string;
-  icon: IconName;
-  tone?: "danger" | "warning";
-}
-
-/** Tiles that link to the matching filtered view. Used on the overview and, compactly, on home pages. */
-export function GrowthTiles({ data, compact = false }: { data: Overview; compact?: boolean }) {
+/**
+ * Growth summary metrics. Links only where the lead list supports the filter (overdue, stale, open list);
+ * range-bound figures (won, lost, win rate) and proposal counts have no matching filter and are plain text.
+ */
+export function growthMetrics(data: Overview): { primary: Metric[]; secondary: Metric[] } {
   const { pipeline, closed, proposals } = data;
-  const tiles: Tile[] = [
-    {
-      label: "Open pipeline",
-      value: formatInr(pipeline.openValueMinor),
-      detail: `${String(pipeline.openCount)} open · ${String(pipeline.unvaluedCount)} without a value`,
-      href: "/growth/leads",
-      icon: "board",
-    },
-    { label: "Overdue follow-ups", value: String(pipeline.overdueCount), href: "/growth/leads?view=list&overdue=true", icon: "alert", tone: "danger" },
-    { label: `Stale (over ${String(data.staleDays)} days)`, value: String(pipeline.staleCount), href: "/growth/leads?view=list&stale=true", icon: "alert", tone: "warning" },
-    { label: "Won in range", value: formatInr(closed.wonAmountMinor), detail: `${String(closed.wonCount)} won`, href: "/growth/leads?view=list&stage=won", icon: "check" },
-  ];
-  if (!compact) {
-    tiles.push(
-      { label: "Lost in range", value: String(closed.lostCount), href: "/growth/leads?view=list&stage=lost", icon: "x" },
-      { label: "Win rate", value: formatPercent(closed.winRate), detail: "Won ÷ (won + lost) in range", href: "/growth/leads?view=list&stage=won", icon: "gauge" },
-      { label: "Awaiting approval", value: String(proposals.pendingApproval), href: "/growth/proposals", icon: "inbox" },
-      { label: "Acceptances to confirm", value: String(proposals.acceptancePending), href: "/growth/proposals", icon: "inbox" },
-    );
-  }
-  return (
-    <div className={dashboard.grid}>
-      {tiles.map((tile) => (
-        <Link key={tile.label} href={tile.href} className={[dashboard.tile, tile.tone ? dashboard[tile.tone] : undefined].filter(Boolean).join(" ")}>
-          <span className={dashboard.tileTop}>
-            <Icon name={tile.icon} />
-            {tile.label}
-          </span>
-          <span className={dashboard.value}>{tile.value}</span>
-          {tile.detail ? <span className={dashboard.label}>{tile.detail}</span> : null}
-        </Link>
-      ))}
-    </div>
+  return {
+    primary: [
+      {
+        label: "Open pipeline",
+        value: formatInr(pipeline.openValueMinor),
+        detail: `${String(pipeline.openCount)} open · ${String(pipeline.unvaluedCount)} without a value`,
+        href: "/growth/leads",
+      },
+      {
+        label: "Overdue follow-ups",
+        value: String(pipeline.overdueCount),
+        href: "/growth/leads?view=list&overdue=true",
+        tone: pipeline.overdueCount > 0 ? "danger" : undefined,
+      },
+      {
+        label: `Stale (over ${String(data.staleDays)} days)`,
+        value: String(pipeline.staleCount),
+        href: "/growth/leads?view=list&stale=true",
+        tone: pipeline.staleCount > 0 ? "warning" : undefined,
+      },
+      { label: "Win rate", value: formatPercent(closed.winRate), detail: "Won ÷ (won + lost) in range" },
+    ],
+    secondary: [
+      { label: "Won in range", value: formatInr(closed.wonAmountMinor), detail: `${String(closed.wonCount)} won` },
+      { label: "Lost in range", value: String(closed.lostCount) },
+      { label: "Awaiting approval", value: String(proposals.pendingApproval) },
+      { label: "Acceptances to confirm", value: String(proposals.acceptancePending) },
+    ],
+  };
+}
+
+/** Open leads by stage, with count and value printed for every bar. */
+export function PipelineBars({ data }: { data: Overview }) {
+  return data.pipeline.openCount === 0 ? (
+    <EmptyState title="No open leads">Leads appear here as the CGO adds them.</EmptyState>
+  ) : (
+    <BarList
+      label="Open leads by stage"
+      legend="Bar length: number of open leads. Figures: count · estimated value."
+      rows={data.stages.map((row) => ({ key: row.stage, label: stageLabel(row.stage), value: row.count, text: `${String(row.count)} · ${formatInr(row.valueMinor)}` }))}
+    />
   );
 }
 
-function Section({ id, title, action, children }: { id: string; title: string; action?: ReactNode; children: ReactNode }) {
-  return (
-    <section className={styles.section} aria-labelledby={id}>
-      <div className={styles.sectionHeader}>
-        <h2 id={id} className={styles.sectionTitle}>
-          {title}
-        </h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-/** Horizontal CSS bars; the value is always printed, so the bar is never the only signal. */
-function Bars({ label, rows }: { label: string; rows: { key: string; label: string; value: number; text: string }[] }) {
-  const max = Math.max(0, ...rows.map((row) => row.value));
-  return (
-    <ul className={styles.bars} aria-label={label}>
-      {rows.map((row) => (
-        <li key={row.key} className={styles.barRow}>
-          <span className={styles.barLabel}>{row.label}</span>
-          <span className={styles.barTrack} aria-hidden="true">
-            <span className={styles.barFill} style={{ width: `${String(barPercent(row.value, max))}%` }} />
-          </span>
-          <span className={styles.barValue}>{row.text}</span>
-        </li>
-      ))}
-    </ul>
-  );
+/** Leads whose follow-up date has passed, as an action list. */
+export function overdueItems(leads: Lead[], companyOf: (id: string | null) => string, nameOf: (id: string) => string): ActionItem[] {
+  return leads.map((lead) => ({
+    key: lead.id,
+    title: lead.name,
+    href: `/growth/leads/${lead.id}`,
+    meta: `${companyOf(lead.companyId)} · ${nameOf(lead.ownerId)}`,
+    trailing: lead.nextFollowUpOn === null ? undefined : formatDate(lead.nextFollowUpOn),
+    tone: "danger",
+  }));
 }
 
 const outcomeColumns = <T extends OutcomeRow>(): Column<T>[] => [
@@ -116,100 +109,123 @@ export function GrowthOverviewBody(props: {
 
   const companyName = (row: CompanyRow) => (row.kind === "none" ? "No company" : row.kind === "other" ? "Other companies" : (row.name ?? "Company"));
   const leadList = (leads: Lead[], empty: string) =>
-    leads.length === 0 ? <p className={styles.muted}>{empty}</p> : <LeadTable leads={leads} nameOf={props.nameOf} companyOf={props.companyOf} />;
+    leads.length === 0 ? <PanelEmpty>{empty}</PanelEmpty> : <LeadTable leads={leads} nameOf={props.nameOf} companyOf={props.companyOf} />;
+
+  const metrics = growthMetrics(data);
+  const table = (id: string, title: string, children: ReactNode, action?: ReactNode) => (
+    <Panel id={id} title={title} action={action} flush>
+      {children}
+    </Panel>
+  );
 
   return (
     <>
-      <GrowthTiles data={data} />
+      <KpiStrip label="Growth summary" metrics={metrics.primary} />
 
-      <div className={styles.reportGrid}>
-        <Section id="stages-heading" title="Open pipeline by stage">
-          {data.pipeline.openCount === 0 ? (
-            <EmptyState title="No open leads" />
-          ) : (
-            <Bars
-              label="Open leads by stage"
-              rows={data.stages.map((row) => ({ key: row.stage, label: stageLabel(row.stage), value: row.count, text: `${String(row.count)} · ${formatInr(row.valueMinor)}` }))}
-            />
-          )}
-        </Section>
+      <DashboardGrid
+        main={
+          <>
+            <Panel id="stages-heading" title="Open pipeline by stage" action={<Link href="/growth/leads">Pipeline board</Link>}>
+              <PipelineBars data={data} />
+            </Panel>
+            {table(
+              "stale-heading",
+              `Stale leads (no touch for over ${String(data.staleDays)} days)`,
+              leadList(props.stale, "No stale leads."),
+              <Link href="/growth/leads?view=list&stale=true">View all</Link>,
+            )}
+          </>
+        }
+        side={
+          <>
+            <Panel id="overdue-heading" title="Overdue follow-ups" action={<Link href="/growth/leads?view=list&overdue=true">View all</Link>} flush>
+              <ActionList label="Overdue follow-ups" items={overdueItems(props.overdue, props.companyOf, props.nameOf)} empty="No overdue follow-ups." />
+            </Panel>
+            <Panel id="closed-heading" title="Closed and proposals in range">
+              <StatGrid metrics={metrics.secondary} />
+            </Panel>
+          </>
+        }
+      />
 
-        <Section id="funnel-heading" title="Funnel in range">
+      <SectionDivider id="breakdowns-heading" title="Breakdowns" />
+      <div className={styles.panelGrid}>
+        <Panel id="funnel-heading" title="Funnel in range">
           {enteredInRange ? (
-            <Bars
+            <BarList
               label="Leads entering each stage"
               rows={data.funnel.map((row) => ({ key: row.stage, label: stageLabel(row.stage), value: row.entered, text: String(row.entered) }))}
             />
           ) : (
-            <EmptyState title="Nothing in this range" />
+            <PanelEmpty>Nothing in this range.</PanelEmpty>
           )}
-        </Section>
-
-        <Section id="lost-heading" title="Lost reasons in range">
+        </Panel>
+        <Panel id="lost-heading" title="Lost reasons in range">
           {closedInRange && data.closed.lostReasons.length > 0 ? (
-            <Bars
+            <BarList
               label="Lost leads by reason"
               rows={data.closed.lostReasons.map((row) => ({ key: row.reason, label: LOST_LABELS[row.reason], value: row.count, text: String(row.count) }))}
             />
           ) : (
-            <EmptyState title="Nothing lost in this range" />
+            <PanelEmpty>Nothing lost in this range.</PanelEmpty>
           )}
-        </Section>
+        </Panel>
       </div>
 
-      <Section id="overdue-heading" title="Overdue follow-ups" action={<Link href="/growth/leads?view=list&overdue=true">View all</Link>}>
-        {leadList(props.overdue, "No overdue follow-ups.")}
-      </Section>
-
-      <Section id="stale-heading" title={`Stale leads (no touch for over ${String(data.staleDays)} days)`} action={<Link href="/growth/leads?view=list&stale=true">View all</Link>}>
-        {leadList(props.stale, "No stale leads.")}
-      </Section>
-
-      <Section id="owner-heading" title="By owner">
-        {data.byOwner.length === 0 ? (
-          <p className={styles.muted}>No leads yet.</p>
-        ) : (
-          <DataTable<OwnerRow>
-            caption="Outcomes by owner"
-            rowKey={(row) => row.ownerId}
-            rows={data.byOwner}
-            columns={[
-              { key: "owner", header: "Owner", render: (row) => `${props.nameOf(row.ownerId)}${row.ownerFlagged ? " (needs reassignment)" : ""}` },
-              ...outcomeColumns<OwnerRow>(),
-            ]}
-          />
+      <div className={styles.stack}>
+        {table(
+          "owner-heading",
+          "By owner",
+          data.byOwner.length === 0 ? (
+            <PanelEmpty>No leads yet.</PanelEmpty>
+          ) : (
+            <DataTable<OwnerRow>
+              caption="Outcomes by owner"
+              density="compact"
+              rowKey={(row) => row.ownerId}
+              rows={data.byOwner}
+              columns={[
+                { key: "owner", header: "Owner", render: (row) => `${props.nameOf(row.ownerId)}${row.ownerFlagged ? " (needs reassignment)" : ""}` },
+                ...outcomeColumns<OwnerRow>(),
+              ]}
+            />
+          ),
         )}
-      </Section>
-
-      <Section id="source-heading" title="By source">
-        <DataTable<SourceRow>
-          caption="Outcomes by source"
-          rowKey={(row) => row.source}
-          rows={data.bySource}
-          columns={[{ key: "source", header: "Source", render: (row) => SOURCE_LABELS[row.source] }, ...outcomeColumns<SourceRow>()]}
-        />
-      </Section>
-
-      <Section id="company-heading" title="By company">
-        {data.byCompany.length === 0 ? (
-          <p className={styles.muted}>No leads yet.</p>
-        ) : (
-          <DataTable<CompanyRow>
-            caption="Outcomes by company"
-            rowKey={(row) => row.companyId ?? row.kind}
-            rows={data.byCompany}
-            columns={[
-              {
-                key: "company",
-                header: "Company",
-                render: (row) =>
-                  row.kind === "company" && row.companyId !== null ? <Link href={`/growth/companies/${row.companyId}`}>{companyName(row)}</Link> : companyName(row),
-              },
-              ...outcomeColumns<CompanyRow>(),
-            ]}
-          />
+        {table(
+          "source-heading",
+          "By source",
+          <DataTable<SourceRow>
+            caption="Outcomes by source"
+            density="compact"
+            rowKey={(row) => row.source}
+            rows={data.bySource}
+            columns={[{ key: "source", header: "Source", render: (row) => SOURCE_LABELS[row.source] }, ...outcomeColumns<SourceRow>()]}
+          />,
         )}
-      </Section>
+        {table(
+          "company-heading",
+          "By company",
+          data.byCompany.length === 0 ? (
+            <PanelEmpty>No leads yet.</PanelEmpty>
+          ) : (
+            <DataTable<CompanyRow>
+              caption="Outcomes by company"
+              density="compact"
+              rowKey={(row) => row.companyId ?? row.kind}
+              rows={data.byCompany}
+              columns={[
+                {
+                  key: "company",
+                  header: "Company",
+                  render: (row) =>
+                    row.kind === "company" && row.companyId !== null ? <Link href={`/growth/companies/${row.companyId}`}>{companyName(row)}</Link> : companyName(row),
+                },
+                ...outcomeColumns<CompanyRow>(),
+              ]}
+            />
+          ),
+        )}
+      </div>
     </>
   );
 }

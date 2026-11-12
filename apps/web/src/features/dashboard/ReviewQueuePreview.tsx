@@ -1,8 +1,7 @@
 import { taskPageSchema } from "@crm/contracts/tasks";
-import Link from "next/link";
+import { ActionList } from "../../components/Insights";
 import { dataOrForbidden, serverGet } from "../../lib/server-api";
 import { DueDate } from "../tasks/DueDate";
-import styles from "./Dashboard.module.css";
 
 const PREVIEW_SIZE = "5";
 
@@ -10,19 +9,17 @@ const PREVIEW_SIZE = "5";
 export async function ReviewQueuePreview() {
   const page = dataOrForbidden(await serverGet("/tasks", taskPageSchema, { status: "in_review", limit: PREVIEW_SIZE }));
   if (page === "forbidden") return null;
-
   return (
-    <div className={styles.preview}>
-      {page.items.length === 0 ? (
-        <p className={styles.previewEmpty}>Nothing waiting for review.</p>
-      ) : (
-        page.items.map((task) => (
-          <div key={task.id} className={styles.previewItem}>
-            <Link href={`/tasks/${task.id}`}>{task.title}</Link>
-            <DueDate date={task.dueDate} overdue={task.overdue} />
-          </div>
-        ))
-      )}
-    </div>
+    <ActionList
+      label="Tasks awaiting review"
+      empty="Nothing waiting for review."
+      items={page.items.map((task) => ({
+        key: task.id,
+        title: task.title,
+        href: `/tasks/${task.id}`,
+        trailing: <DueDate date={task.dueDate} overdue={task.overdue} />,
+        tone: task.overdue ? "danger" : "warning",
+      }))}
+    />
   );
 }

@@ -1,32 +1,20 @@
 import type { QualitySummary } from "@crm/contracts/quality";
-import Link from "next/link";
-import { Icon, type IconName } from "../../components/Icon";
-import styles from "../dashboard/Dashboard.module.css";
+import { StatGrid, type Metric } from "../../components/Insights";
 
-/** Exact, uncapped counts from GET /quality/summary. Never shows a cap notice. */
-export function QualityTiles({ counts }: { counts: QualitySummary["counts"] }) {
-  const tiles: { label: string; value: number; href: string; icon: IconName; tone?: "danger" | "warning" }[] = [
-    { label: "Critical open", value: counts.openCriticalDefects, href: "/defects?severity=critical&open=true", icon: "bug", tone: "danger" },
-    { label: "High open", value: counts.openHighDefects, href: "/defects?severity=high&open=true", icon: "bug", tone: "warning" },
-    { label: "Failed checks", value: counts.failedQaChecks, href: "/quality", icon: "alert" },
-    { label: "Blocked checks", value: counts.blockedQaChecks, href: "/quality", icon: "alert" },
-    { label: "Projects not ready", value: counts.projectsNotReady, href: "/quality", icon: "gauge" },
+/**
+ * Exact, uncapped counts from GET /quality/summary. Defect counts link to the defect list, which supports
+ * severity and open filters; the check and readiness counts have no list filter and are plain text.
+ */
+export function qualityMetrics(counts: QualitySummary["counts"]): Metric[] {
+  return [
+    { label: "Critical open", value: String(counts.openCriticalDefects), href: "/defects?severity=critical&open=true", tone: counts.openCriticalDefects > 0 ? "danger" : undefined },
+    { label: "High open", value: String(counts.openHighDefects), href: "/defects?severity=high&open=true", tone: counts.openHighDefects > 0 ? "warning" : undefined },
+    { label: "Failed checks", value: String(counts.failedQaChecks), tone: counts.failedQaChecks > 0 ? "danger" : undefined },
+    { label: "Blocked checks", value: String(counts.blockedQaChecks), tone: counts.blockedQaChecks > 0 ? "warning" : undefined },
+    { label: "Projects not ready", value: String(counts.projectsNotReady) },
   ];
-  return (
-    <div className={styles.grid}>
-      {tiles.map((tile) => (
-        <Link
-          key={tile.label}
-          href={tile.href}
-          className={[styles.tile, tile.tone ? styles[tile.tone] : undefined].filter(Boolean).join(" ")}
-        >
-          <span className={styles.tileTop}>
-            <Icon name={tile.icon} />
-            {tile.label}
-          </span>
-          <span className={styles.value}>{String(tile.value)}</span>
-        </Link>
-      ))}
-    </div>
-  );
+}
+
+export function QualityTiles({ counts }: { counts: QualitySummary["counts"] }) {
+  return <StatGrid metrics={qualityMetrics(counts)} />;
 }
